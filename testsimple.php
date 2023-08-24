@@ -18,7 +18,7 @@ class Tester {
         }
     }
 
-    public function ok($expr, $msg)
+    public function ok($expr, $msg = '')
     {
         $this->test_count++;
         if( !$expr )
@@ -35,7 +35,7 @@ class Tester {
         }
     }
 
-    public function not_ok($expr, $msg)
+    public function not_ok($expr, $msg = '')
     {
         return $this->ok(!$expr, $msg);
     }
@@ -49,7 +49,7 @@ class Tester {
 
     private function print_status()
     {
-        printf("Test suite %s\n", 0 == $this->fail_count ? "succeeded" : "failed");
+        printf("\nTest suite %s\n", 0 == $this->fail_count ? "succeeded" : "failed");
         printf("\t%d/%d tests succeeded\n",
               $this->test_count - $this->fail_count,
               $this->test_count,
