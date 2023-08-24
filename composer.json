@@ -1,0 +1,10 @@
+{
+    "name": "levigutt/testsimple-php",
+    "version": "0.1",
+    "description": "Test::Simple for php",
+    "autoload": {
+        "files": ["testsimple.php"]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
