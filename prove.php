@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 require_once "vendor/autoload.php";
 
@@ -5,8 +6,8 @@ use TestSimple\Tester;
 $test = new Tester();
 
 # load tests from provided dir, defaults to ./tests
-$dir = count($argv) > 1 ? $argv[1] : 'tests';
-$dh = opendir(__DIR__."/$dir");
+$dir = sprintf("%s/%s", getcwd(), count($argv) > 1 ? $argv[1] : 'tests');
+$dh = opendir($dir);
 register_shutdown_function(fn() => closedir($dh));
 
 while( $file = readdir($dh) )
