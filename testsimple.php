@@ -3,61 +3,91 @@
 namespace TestSimple;
 
 class Tester {
-    private bool $is_done = false;
     private int $test_count = 0;
     private int $fail_count = 0;
+    private array $errors = [];
+    private bool $is_done = false;
+    public bool $stop_on_failure = false;
 
-    public function __construct(public bool $verbose = false){}
+    public function __construct(private int $plan_count = 0){}
 
     public function __destruct()
     {
         if( !$this->is_done )
         {
-            $this->print_status();
+            $this->print_result();
             exit(255);
         }
     }
 
+    # add and validate a new test
+    # $test->ok( 1 + 1 == 2, "1 plus 1 equals 2" );
     public function ok($expr, $msg = '')
     {
         $this->test_count++;
         if( !$expr )
-        {
-            $this->fail_count++;
-            printf("\nTest #%d failed\n\t%s\n", $this->test_count, $msg);
-        }
+            $this->fail($msg);
         else
-        {
-            if( $this->verbose )
-            {
-                printf("\nTest #%d succeeded\n\t%s\n", $this->test_count, $msg);
-            }
-        }
+            echo ".";
+        flush();
+    }
+
+    # fail the current test
+    public function fail(string $msg, string $chr = 'F')
+    {
+        echo $chr;
+        $this->fail_count++;
+        $this->errors[] = sprintf("\nTest #%d failed\n\t%s",
+                             $this->test_count,
+                             $msg);
+        if( $this->stop_on_failure )
+            $this->done();
     }
 
     public function not_ok($expr, $msg = '')
     {
-        return $this->ok(!$expr, $msg);
+        $this->ok( !$expr, $msg );
+    }
+
+    public function insist($expr, $msg = '')
+    {
+        $sof = $this->stop_on_failure;
+        $this->stop_on_failure = true;
+        $this->ok($expr, $msg);
+        $this->stop_on_failure = $sof;
     }
 
     public function done()
     {
         $this->is_done = true;
-        $this->print_status();
-        exit($this->fail_count);
+        if( $this->plan_count )
+        {
+            $this->ok( $this->plan_count == $this->test_count,
+                sprintf("Wrong number of tests\n\texpected %d, but ran %d\n",
+                        $this->plan_count,
+                        $this->test_count));
+        }
+        $this->print_result();
+        exit($this->fail_count > 254 ? 254 : $this->fail_count);
     }
 
-    private function print_status()
+    private function print_result()
     {
-        printf("\nTest suite %s\n", 0 == $this->fail_count ? "succeeded" : "failed");
+        if( $this->fail_count == 0 )
+            echo "\033[102mOK\033[0m";
+        else
+            echo "\033[101mNOT OK\033[0m";
+
+        foreach( $this->errors as $error )
+            print $error;
+
+        printf("\nTest suite %s\n", $this->fail_count ? "failed" : "succeeded");
         printf("\t%d/%d tests succeeded\n",
               $this->test_count - $this->fail_count,
               $this->test_count,
         );
         if( !$this->is_done )
-        {
             printf("\tTester::done() was never called\n");
-        }
     }
 
 }

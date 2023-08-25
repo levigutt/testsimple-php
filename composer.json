@@ -1,6 +1,6 @@
 {
     "name": "levigutt/testsimple-php",
-    "version": "0.1",
+    "version": "0.2",
     "description": "Test::Simple for php",
     "autoload": {
         "files": ["testsimple.php"]
