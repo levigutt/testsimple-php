@@ -73,21 +73,15 @@ class Tester {
 
     private function print_result()
     {
-        if( $this->fail_count == 0 )
-            echo "\033[102mOK\033[0m";
-        else
-            echo "\033[101mNOT OK\033[0m";
-
         foreach( $this->errors as $error )
             print $error;
 
-        printf("\nTest suite %s\n", $this->fail_count ? "failed" : "succeeded");
-        printf("\t%d/%d tests succeeded\n",
-              $this->test_count - $this->fail_count,
-              $this->test_count,
-        );
-        if( !$this->is_done )
-            printf("\tTester::done() was never called\n");
+        if( $this->fail_count == 0 )
+            printf("\n\033[92mOK (%d assertions)\n", $this->test_count);
+        else
+            printf("\n\033[91mFAIL (%d assertions, %d failures)\033[0m\n",
+                $this->test_count, $this->fail_count);
+
     }
 
 }
