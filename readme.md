@@ -1,12 +1,12 @@
 # simple testing framework for php
 
-inspired by [https://metacpan.org/pod/Test%3A%3ASimple](Test::Simple) for perl, but not intended to offer identical functionality.
+inspired by  [Test::Simple](https://metacpan.org/pod/Test::Simple) for perl, but not intended to offer identical functionality.
 
 ## background
 
-I made this because [https://phpunit.de/](PHPUnit) often feels like overkill for smaller projects.
+I made this because [PHPUnit](https://phpunit.de/) often feels like overkill for smaller projects.
 
-I considered [https://github.com/peridot-php/leo](Peridot/Leo) but could not get it to work on php8 (it also has not been updated in a while).
+I considered [Peridot/Leo](https://github.com/peridot-php/leo) but could not get it to work on php8 (it also has not been updated in a while).
 
 ## getting started
 
