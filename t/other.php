@@ -1,6 +1,6 @@
 <?php
 
-# 4 tests
+$test->plan_count+= 4;
 
 $result = exec("./prove.php t/insist", $out, $retval);
 $test->ok(1 == $retval, "'insist' stops on failure");

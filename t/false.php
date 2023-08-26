@@ -1,6 +1,6 @@
 <?php
 
-# 5 tests
+$test->plan_count+= 5;
 
 $test->not_ok(false, "false should fail");
 $test->not_ok(0,     "0 should fail");
