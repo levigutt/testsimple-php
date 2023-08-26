@@ -12,7 +12,7 @@ register_shutdown_function(fn() => closedir($dh));
 
 while( $file = readdir($dh) )
 {
-    if( $file == "." || $file == ".." || substr($file, -4) != ".php")
+    if( !is_file("$dir/$file") || substr($file, -4) != ".php")
         continue;
     # catch exceptions for each file
     try
