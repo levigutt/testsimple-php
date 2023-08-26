@@ -1,6 +1,6 @@
 # simple testing framework for php
 
-inspired by [https://metacpan.org/pod/Test::Simple](Test::Simple) for perl, but not intended to offer identical functionality.
+inspired by [https://metacpan.org/pod/Test%3A%3ASimple](Test::Simple) for perl, but not intended to offer identical functionality.
 
 ## background
 
@@ -17,7 +17,7 @@ require_once("testsimple.php");
 $test = new TestSimple\Tester();
 
 $test->ok(true);
-$test->ok(1 + 1 == 2, "1 plus 1 equals 2"); # optional description
+$test->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
 $test->insist(2 + 2 == 5, "2 plus 2 equals 5"); # stop execution on failure
 $test->done();
 ```
@@ -29,7 +29,7 @@ $ php test.php
 
 ## larger test suites
 
-for larger test suites you organise tests in separate files in a directory and run them all at once.
+for larger test suites you should organise tests in separate files.
 
 each test file should contain only the tests:
 
@@ -57,7 +57,7 @@ when using `prove.php` the test object is always named `$test`.
 
 `prove.php` will run each file in isolation, so that an uncaught exception in one file doesn't stop execution of the remaining files.
 
-exceptions are reported as failures, but not counted as assertions.
+exceptions are reported as failures, but not counted as assertions in the final report.
 
 ## other features
 
@@ -69,7 +69,7 @@ you can specify the number of tests to be run upfront as an extra precaution.
 $tests = new Tester(5); # will fail unless exactly 5 tests are run
 ```
 
-when using `prove.php`, the test object is constructed withtout a test plan, but you can add one later:
+when using `prove.php`, the test object is constructed without a test plan, but you can add one later:
 ```php
 $tests->plan_count = 5;
 ```
@@ -78,7 +78,7 @@ you can also add and subtract from the plan:
 
 ```php
 if (PHP_OS_FAMILY === "Windows") {
-    $test->plan_test+= 1;
+    $test->plan_count+= 1;
     $test->ok( WinSpecificTest() == 1, "Check the Windows thing");
 }
 ```
@@ -105,4 +105,11 @@ $test->insist( false == $db->connect_error, "require db connection to proceed");
 **not ok**
 
 you can use `not_ok($expr)` instead of negating the expression `ok(!$expr)`.
+
+## caveats
+
+you have to do exception handling yourself when using a standalone test script.
+
+when specifying the number of tests, the actual number of tests reported will be one higher since this literally adds a test at the end to validate the number of tests. however, you do not have to take this into consideration when setting the number of tests.
+
 
