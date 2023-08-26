@@ -3,13 +3,13 @@
 namespace TestSimple;
 
 class Tester {
-    private int $test_count = 0;
-    private int $fail_count = 0;
-    private array $errors = [];
-    private bool $is_done = false;
-    public bool $stop_on_failure = false;
+    private int   $test_count      = 0;
+    private int   $fail_count      = 0;
+    private array $errors          = [];
+    private bool  $is_done         = false;
+    public  bool  $stop_on_failure = false;
 
-    public function __construct(private int $plan_count = 0){}
+    public function __construct(public int $plan_count = 0){}
 
     public function __destruct()
     {
@@ -63,7 +63,7 @@ class Tester {
         if( $this->plan_count )
         {
             $this->ok( $this->plan_count == $this->test_count,
-                sprintf("Wrong number of tests\n\texpected %d, but ran %d\n",
+                sprintf("wrong number of tests\n\texpected %d, but ran %d\n",
                         $this->plan_count,
                         $this->test_count));
         }
