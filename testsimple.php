@@ -77,11 +77,11 @@ class Tester {
             print $error;
 
         if( $this->fail_count == 0 )
-            printf("\n\033[92mOK (%d assertions)\n", $this->test_count);
+            printf("\n\033[92mOK (%d assertions)", $this->test_count);
         else
-            printf("\n\033[91mFAIL (%d assertions, %d failures)\033[0m\n",
+            printf("\n\033[91mFAIL (%d assertions, %d failures)",
                 $this->test_count, $this->fail_count);
-
+        print "\033[0m\n";
     }
 
 }
