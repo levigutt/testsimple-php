@@ -2,7 +2,7 @@
 
 namespace TestSimple;
 
-class Tester {
+class Assert {
     private int   $test_count      = 0;
     private int   $fail_count      = 0;
     private array $errors          = [];

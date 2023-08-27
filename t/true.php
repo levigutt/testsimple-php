@@ -1,9 +1,9 @@
 <?php
 
-$test->plan+= 5;
+$assert->plan+= 5;
 
-$test->ok(true, "true should pass");
-$test->ok(1,     "1 should pass");
-$test->ok("a",   "a should pass");
-$test->ok(['a'], "['a'] should pass");
-$test->ok(['0'], "['0'] should pass");
+$assert->ok(true, "true should pass");
+$assert->ok(1,     "1 should pass");
+$assert->ok("a",   "a should pass");
+$assert->ok(['a'], "['a'] should pass");
+$assert->ok(['0'], "['0'] should pass");

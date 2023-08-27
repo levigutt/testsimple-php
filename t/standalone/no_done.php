@@ -1,6 +1,6 @@
 <?php
 
 require_once "testsimple.php";
-$test = new TestSimple\Tester();
+$assert = new TestSimple\Assert();
 
-$test->ok(true);
+$assert->ok(true);

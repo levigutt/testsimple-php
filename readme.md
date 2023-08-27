@@ -17,13 +17,13 @@ you can make a simple standalone test script, like so:
 
 ```php
 require_once("testsimple.php");
-$test = new TestSimple\Tester();
+$assert = new TestSimple\Assert();
 
-$test->ok(false);
-$test->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
-$test->insist(2 + 2 == 5, "2 plus 2 equals 5"); # stop execution on failure
-$test->ok(42 % 5);
-$test->done();
+$assert->ok(false);
+$assert->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
+$assert->insist(2 + 2 == 5, "2 plus 2 equals 5"); # stop execution on failure
+$assert->ok(42 % 5);
+$assert->done();
 ```
 
 and then run it like this:
@@ -46,13 +46,13 @@ if we fix the issues and run again:
 
 ```php
 require_once("testsimple.php");
-$test = new TestSimple\Tester();
+$assert = new TestSimple\Assert();
 
-$test->ok(true);
-$test->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
-$test->insist(2 + 2 == 4, "2 plus 2 equals 4"); # stop execution on failure
-$test->ok(42 % 5);
-$test->done();
+$assert->ok(true);
+$assert->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
+$assert->insist(2 + 2 == 4, "2 plus 2 equals 4"); # stop execution on failure
+$assert->ok(42 % 5);
+$assert->done();
 ```
 
 ```sh
@@ -83,14 +83,14 @@ each test file should contain only the tests:
 
 `t/basic.php`:
 ```php
-$test->ok(1 + 1 == 2, "1 plus 1 equals 2");
+$assert->ok(1 + 1 == 2, "1 plus 1 equals 2");
 ```
 
 `t/form.php`:
 ```php
 $form = new Form(42);
-$test->ok($form->ready(),  "form is ready for use");
-$test->ok($form->submit(), "submit returns true");
+$assert->ok($form->ready(),  "form is ready for use");
+$assert->ok($form->submit(), "submit returns true");
 ```
 
 to run the tests
@@ -101,7 +101,7 @@ to run the tests
 
 it loads from `tests/` unless you specify another directory.
 
-when using `prove.php` the test object is always named `$test`.
+when using `prove.php` the test object is always named `$assert`.
 
 `prove.php` will capture any exceptions thrown, so that an error in one file
 doesn't stop execution of the remaining files. exceptions are reported as
@@ -114,22 +114,22 @@ failures in the output.
 you can specify the number of tests to be run upfront as an extra precaution.
 
 ```php
-$tests = new Tester(5); # will fail unless exactly 5 tests are run
+$assert = new Assert(5); # will fail unless exactly 5 tests are run
 ```
 
 when using `prove.php`, the test object is constructed without a test plan, but
 you can add one later:
 
 ```php
-$tests->plan_count = 5;
+$assert->plan_count = 5;
 ```
 
 you can also add and subtract from the plan:
 
 ```php
 if (PHP_OS_FAMILY === "Windows") {
-    $test->plan_count+= 1;
-    $test->ok( WinSpecificTest() == 1, "Check the Windows thing");
+    $assert->plan_count+= 1;
+    $assert->ok( WinSpecificTest() == 1, "Check the Windows thing");
 }
 ```
 
@@ -138,19 +138,19 @@ if (PHP_OS_FAMILY === "Windows") {
 you can instruct testsimple to stop the test suit if it encounters a failure.
 
 ```php
-$test->stop_on_failure = true;
-$test->ok(false);
-$test->ok(true, "this will not run")
+$assert->stop_on_failure = true;
+$assert->ok(false);
+$assert->ok(true, "this will not run")
 ```
 
 if you only need to stop on failure for a specific test, you can instead use
 `insist`:
 
 ```php
-$test->insist( ENV == 'development', "only run tests on dev-environment");
+$assert->insist( ENV == 'development', "only run tests on dev-environment");
 
 $db = new mysqli($srv, $usr, $pwd);
-$test->insist( false == $db->connect_error, "require db connection to proceed");
+$assert->insist( false == $db->connect_error, "require db connection to proceed");
 ```
 
 **not ok**

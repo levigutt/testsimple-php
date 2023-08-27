@@ -2,8 +2,8 @@
 <?php
 require_once "vendor/autoload.php";
 
-use TestSimple\Tester;
-$test = new Tester();
+use TestSimple\Assert;
+$assert = new Assert();
 
 # load tests from provided dir, defaults to ./tests
 $dir = sprintf("%s/%s", getcwd(), count($argv) > 1 ? $argv[1] : 'tests');
@@ -21,10 +21,10 @@ while( $file = readdir($dh) )
     }
     catch( Throwable $e)
     {
-        $test->fail(sprintf("Caught exception: %s", $e->getMessage()), "E");
+        $assert->fail(sprintf("Caught exception: %s", $e->getMessage()), "E");
     }
 }
 
-$test->done();
+$assert->done();
 
 ?>

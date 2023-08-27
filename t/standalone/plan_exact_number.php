@@ -1,11 +1,11 @@
 <?php 
 
 require_once("testsimple.php");
-$test = new TestSimple\Tester(4);
+$assert = new TestSimple\Assert(4);
 
-$test->ok(true);
-$test->ok(true);
-$test->ok(true);
-$test->ok(true);
+$assert->ok(true);
+$assert->ok(true);
+$assert->ok(true);
+$assert->ok(true);
 
-$test->done();
+$assert->done();
