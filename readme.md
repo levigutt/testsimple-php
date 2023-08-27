@@ -63,6 +63,18 @@ OK (4 assertions)
 
 now we see that all tests passed.
 
+## exit codes
+
+if all tests pass, testsimple will exit with zero - indicating no error. if anything failed, it will exit with how many failed. if the tests were run incorrectly, it will exit with 255.
+
+```
+0           all tests passed
+1..254      how many tests failed
+255         something went wrong
+```
+
+if more than 254 tests fail, it will be reported as 254.
+
 ## larger test suites
 
 for larger test suites you should organise tests in separate files.
@@ -94,18 +106,6 @@ when using `prove.php` the test object is always named `$test`.
 `prove.php` will capture any exceptions thrown, so that an error in one file
 doesn't stop execution of the remaining files. exceptions are reported as
 failures in the output.
-
-## exit codes
-
-if all tests pass, testsimple will exit with zero - indicating no error. if anything failed, it will exit with how many failed. if the tests were run incorrectly, it will exit with 255.
-
-```
-0           all tests passed
-1..254      how many tests failed
-255         something went wrong
-```
-
-if more than 254 tests fail, it will be reported as 254.
 
 ## other features
 
