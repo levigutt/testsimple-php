@@ -1,4 +1,4 @@
 <?php
 
-$test->ok(1/0);
-$test->ok(false, "this should not run");
+$assert->ok(1/0);
+$assert->ok(false, "this should not run");

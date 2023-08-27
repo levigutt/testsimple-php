@@ -1,7 +1,7 @@
 <?php
 
 require_once "testsimple.php";
-$test = new TestSimple\Tester();
+$assert = new TestSimple\Assert();
 
-$test->stop_on_failure = true;
-$test->ok(true);
+$assert->stop_on_failure = true;
+$assert->ok(true);
