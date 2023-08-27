@@ -1,6 +1,6 @@
 {
     "name": "levigutt/testsimple-php",
-    "version": "0.4",
+    "version": "0.5",
     "description": "simple testing framework for php",
     "autoload": {
         "files": ["testsimple.php"]

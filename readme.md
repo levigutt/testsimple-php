@@ -1,12 +1,15 @@
 # simple testing framework for php
 
-inspired by  [Test::Simple](https://metacpan.org/pod/Test::Simple) for perl, but not intended to offer identical functionality.
+inspired by  [Test::Simple](https://metacpan.org/pod/Test::Simple) for perl,
+but not intended to offer identical functionality.
 
 ## background
 
-I made this because [PHPUnit](https://phpunit.de/) often feels like overkill for smaller projects.
+I made this because [PHPUnit](https://phpunit.de/) often feels like overkill
+for smaller projects.
 
-I considered [Peridot/Leo](https://github.com/peridot-php/leo) but could not get it to work on php8 (it also has not been updated in a while).
+I considered [Peridot/Leo](https://github.com/peridot-php/leo) but could not
+get it to work on php8 (it also has not been updated in a while).
 
 ## getting started
 
@@ -16,16 +19,49 @@ you can make a simple standalone test script, like so:
 require_once("testsimple.php");
 $test = new TestSimple\Tester();
 
-$test->ok(true);
+$test->ok(false);
 $test->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
 $test->insist(2 + 2 == 5, "2 plus 2 equals 5"); # stop execution on failure
+$test->ok(42 % 5);
 $test->done();
 ```
 
 and then run it like this:
 ```
 $ php test.php
+F.F
+Test #1 failed
+
+Test #3 failed
+        2 plus 2 equals 5
+FAIL (3 assertions, 2 failures)
 ```
+
+the first test failed, showing no description in the output.
+
+the third one failed too, but since it was a `insist` it stopped any further
+tests from being run.
+
+if we fix the issues and run again:
+
+```php
+require_once("testsimple.php");
+$test = new TestSimple\Tester();
+
+$test->ok(true);
+$test->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
+$test->insist(2 + 2 == 4, "2 plus 2 equals 4"); # stop execution on failure
+$test->ok(42 % 5);
+$test->done();
+```
+
+```sh
+$ php test.php
+....
+OK (4 assertions)
+```
+
+now we see that all tests passed.
 
 ## larger test suites
 
@@ -55,9 +91,21 @@ it loads from `tests/` unless you specify another directory.
 
 when using `prove.php` the test object is always named `$test`.
 
-`prove.php` will run each file in isolation, so that an uncaught exception in one file doesn't stop execution of the remaining files.
+`prove.php` will capture any exceptions thrown, so that an error in one file
+doesn't stop execution of the remaining files. exceptions are reported as
+failures in the output.
 
-exceptions are reported as failures, but not counted as assertions in the final report.
+## exit codes
+
+if all tests pass, testsimple will exit with zero - indicating no error. if anything failed, it will exit with how many failed. if the tests were run incorrectly, it will exit with 255.
+
+```
+0           all tests passed
+1..254      how many tests failed
+255         something went wrong
+```
+
+if more than 254 tests fail, it will be reported as 254.
 
 ## other features
 
@@ -69,7 +117,9 @@ you can specify the number of tests to be run upfront as an extra precaution.
 $tests = new Tester(5); # will fail unless exactly 5 tests are run
 ```
 
-when using `prove.php`, the test object is constructed without a test plan, but you can add one later:
+when using `prove.php`, the test object is constructed without a test plan, but
+you can add one later:
+
 ```php
 $tests->plan_count = 5;
 ```
@@ -93,7 +143,8 @@ $test->ok(false);
 $test->ok(true, "this will not run")
 ```
 
-if you only need to stop on failure for a specific test, you can instead use `insist`:
+if you only need to stop on failure for a specific test, you can instead use
+`insist`:
 
 ```php
 $test->insist( ENV == 'development', "only run tests on dev-environment");

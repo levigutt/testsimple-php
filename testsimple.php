@@ -9,12 +9,14 @@ class Tester {
     private bool  $is_done         = false;
     public  bool  $stop_on_failure = false;
 
-    public function __construct(public int $plan_count = 0){}
+    public function __construct(public int $plan = 0){}
 
     public function __destruct()
     {
         if( !$this->is_done )
         {
+            $this->stop_on_failure = false;
+            $this->fail("->done() was not called");
             $this->print_result();
             exit(255);
         }
@@ -60,11 +62,11 @@ class Tester {
     public function done()
     {
         $this->is_done = true;
-        if( $this->plan_count )
+        if( $this->plan )
         {
-            $this->ok( $this->plan_count == $this->test_count,
+            $this->ok( $this->plan == $this->test_count,
                 sprintf("wrong number of tests\n\texpected %d, but ran %d\n",
-                        $this->plan_count,
+                        $this->plan,
                         $this->test_count));
         }
         $this->print_result();
