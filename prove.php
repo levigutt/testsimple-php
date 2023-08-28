@@ -10,10 +10,14 @@ $dir = sprintf("%s/%s", getcwd(), count($argv) > 1 ? $argv[1] : 'tests');
 $dh = opendir($dir);
 register_shutdown_function(fn() => closedir($dh));
 
+$files = [];
 while( $file = readdir($dh) )
+    if( is_file("$dir/$file") && substr($file, -4) == ".php" )
+        $files[] = $file;
+
+asort($files);
+foreach($files as $file)
 {
-    if( !is_file("$dir/$file") || substr($file, -4) != ".php")
-        continue;
     # catch exceptions for each file
     try
     {

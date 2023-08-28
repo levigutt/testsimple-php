@@ -77,16 +77,18 @@ if more than 254 tests fail, it will be reported as 254.
 
 ## larger test suites
 
-for larger test suites you should organise tests in separate files.
+for larger test suites you should organise tests in separate files. the files
+are loaded and run in order, by file name. start the filename with digits to
+control the order of execution.
 
 each test file should contain only the tests:
 
-`t/basic.php`:
+`t/01-basic.php`:
 ```php
 $assert->ok(1 + 1 == 2, "1 plus 1 equals 2");
 ```
 
-`t/form.php`:
+`t/02-form.php`:
 ```php
 $form = new Form(42);
 $assert->ok($form->ready(),  "form is ready for use");
