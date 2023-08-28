@@ -121,14 +121,14 @@ when using `prove.php`, the test object is constructed without a test plan, but
 you can add one later:
 
 ```php
-$assert->plan_count = 5;
+$assert->plan = 5;
 ```
 
 you can also add and subtract from the plan:
 
 ```php
 if (PHP_OS_FAMILY === "Windows") {
-    $assert->plan_count+= 1;
+    $assert->plan+= 1;
     $assert->ok( WinSpecificTest() == 1, "Check the Windows thing");
 }
 ```
