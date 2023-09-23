@@ -24,10 +24,19 @@ class Assert {
 
     # add and validate a new test
     # $test->ok( 1 + 1 == 2, "1 plus 1 equals 2" );
-    public function ok($expr, $msg = '')
+    public function ok($expr, $msg = '', $negate = false)
     {
+        if( is_callable($expr) )
+        {
+            try {
+                $expr = $expr();
+            } catch(\Throwable $th)
+            {
+                $expr = false;
+            }
+        }
         $this->test_count++;
-        if( !$expr )
+        if( !$expr && !$negate )
             $this->fail($msg);
         else
             echo ".";
@@ -48,7 +57,7 @@ class Assert {
 
     public function not_ok($expr, $msg = '')
     {
-        $this->ok( !$expr, $msg );
+        $this->ok( $expr, $msg, true );
     }
 
     public function insist($expr, $msg = '')
