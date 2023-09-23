@@ -54,10 +54,9 @@ class Assert {
     {
         echo $chr;
         $this->fail_count++;
-        $this->errors[] = sprintf("\nTest #%d failed\n\t%s\n\t%s",
+        $this->errors[] = sprintf("\nTest #%d failed\n\t%s",
                              $this->test_count,
-                             $this->caller,
-                             $msg);
+                             ($this->caller ? $this->caller . "\n\t":'').$msg);
         if( $this->stop_on_failure )
             $this->done();
     }

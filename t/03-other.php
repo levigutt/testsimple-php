@@ -1,11 +1,13 @@
 <?php
 
-$assert->plan+= 15;
+$assert->plan+= 16;
 
 $result = exec("./prove.php t/exception", $out, $retval);
 $assert->ok(1 == $retval, "exceptions stops execution");
 $assert->ok(false !== strpos($result, "FAIL (0 assertions, 1 failures)"),
     "exception counts as failure, but not as assertion");
+$assert->ok($result, "/t/exception/throw_error.php:3", 
+    "exceptions shows file and line number");
 
 unset($out);
 $result = exec("php t/standalone/insist.php", $out, $retval);
