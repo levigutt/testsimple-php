@@ -3,11 +3,12 @@
 namespace TestSimple;
 
 class Assert {
-    private int   $test_count      = 0;
-    private int   $fail_count      = 0;
-    private array $errors          = [];
-    private bool  $is_done         = false;
-    public  bool  $stop_on_failure = false;
+    private int    $test_count      = 0;
+    private int    $fail_count      = 0;
+    private array  $errors          = [];
+    private string $caller          = '';
+    private bool   $is_done         = false;
+    public  bool   $stop_on_failure = false;
 
     public function __construct(public int $plan = 0){}
 
@@ -26,6 +27,9 @@ class Assert {
     # $test->ok( 1 + 1 == 2, "1 plus 1 equals 2" );
     public function ok($expr, $msg = '', $negate = false)
     {
+        $bt = debug_backtrace();
+        $caller = array_shift($bt);
+        $this->caller = sprintf("%s:%s", $caller['file'], $caller['line']);
         if( is_callable($expr) )
         {
             try {
@@ -37,7 +41,9 @@ class Assert {
         }
         $this->test_count++;
         if( !$expr && !$negate )
+        {
             $this->fail($msg);
+        }
         else
             echo ".";
         flush();
@@ -48,8 +54,9 @@ class Assert {
     {
         echo $chr;
         $this->fail_count++;
-        $this->errors[] = sprintf("\nTest #%d failed\n\t%s",
+        $this->errors[] = sprintf("\nTest #%d failed\n\t%s\n\t%s",
                              $this->test_count,
+                             $this->caller,
                              $msg);
         if( $this->stop_on_failure )
             $this->done();
