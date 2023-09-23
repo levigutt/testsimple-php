@@ -25,7 +25,12 @@ foreach($files as $file)
     }
     catch( Throwable $e)
     {
-        $assert->fail(sprintf("Caught exception: %s", $e->getMessage()), "E");
+        $fail_message = sprintf("%s:%s\n\tCaught exception: %s\n",
+                            $e->getFile(),
+                            $e->getLine(),
+                            $e->getMessage(),
+                        );
+        $assert->fail($fail_message, "E");
     }
 }
 
