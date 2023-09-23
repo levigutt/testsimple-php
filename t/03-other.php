@@ -1,6 +1,6 @@
 <?php
 
-$assert->plan+= 10;
+$assert->plan+= 11;
 
 $result = exec("./prove.php t/exception", $out, $retval);
 $assert->ok(1 == $retval, "exceptions stops execution");
@@ -30,3 +30,5 @@ $assert->ok(255 == $retval, "tests fail unless ->done() is called, even if stop-
 $result = exec("php t/standalone/max.php", $out, $retval);
 $assert->ok(254 == $retval, "more than 254 failed tests are reported as 254");
 
+$test_file_order++;
+$assert->ok(3 == $test_file_order, "file #3 comes third");
