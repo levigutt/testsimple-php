@@ -1,12 +1,12 @@
 <?php
 
-$assert->plan+= 16;
+$assert->plan+= 17;
 
 $result = exec("./prove.php t/exception", $out, $retval);
 $assert->ok(1 == $retval, "exceptions stops execution");
 $assert->ok(false !== strpos($result, "FAIL (0 assertions, 1 failures)"),
     "exception counts as failure, but not as assertion");
-$assert->ok($result, "/t/exception/throw_error.php:3", 
+$assert->ok(false !== strpos(join('',$out), "/t/exception/throw_error.php:3"),
     "exceptions shows file and line number");
 
 unset($out);
@@ -38,6 +38,12 @@ $assert->ok(255 == $retval, "tests fail unless ->done() is called, even if stop-
 unset($out);
 $result = exec("php t/standalone/max.php", $out, $retval);
 $assert->ok(254 == $retval, "more than 254 failed tests are reported as 254");
+
+unset($out);
+$result = exec("php t/standalone/not_ok.php", $out, $retval);
+$assert->ok(1 == $retval, "true val to not_ok should fail");
+$assert->ok(false !== strpos($result, "FAIL (2 assertions, 1 failures)"),
+    "failed not_ok causes a failure");
 
 unset($out);
 $result = exec("php prove.php t/trace", $out, $retval);
