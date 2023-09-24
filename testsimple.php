@@ -25,7 +25,7 @@ class Assert {
 
     # add and validate a new test
     # $test->ok( 1 + 1 == 2, "1 plus 1 equals 2" );
-    public function ok($expr, $msg = '', $negate = false)
+    public function ok(mixed $expr, string $msg = '', bool $negate = false)
     {
         $bt = debug_backtrace();
         $caller = array_shift($bt);
@@ -40,10 +40,10 @@ class Assert {
             }
         }
         $this->test_count++;
-        if( !$expr && !$negate )
-        {
+        if( $negate )
+            $expr = !$expr;
+        if( !$expr )
             $this->fail($msg);
-        }
         else
             echo ".";
         flush();
