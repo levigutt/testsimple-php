@@ -18,5 +18,5 @@ $result = exec("./prove.php t/exception", $out, $retval);
 $assert->is('E', $out[0], "exceptions are tallied as 'E'");
 $assert->ok(false !== strpos($result, "FAIL (0 assertions, 1 failures)"),
     "exception counts as failure, but not as assertion");
-$assert->ok($result, "/t/exception/throw_error.php:3",
+$assert->ok($result !== strpos($result, "/t/exception/throw_error.php:3"),
     "exceptions shows file and line number");
