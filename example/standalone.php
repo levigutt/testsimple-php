@@ -1,12 +1,18 @@
 <?php
-
 require_once("testsimple.php");
 $assert = new TestSimple\Assert();
 
-$assert->ok(false);
-$assert->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
-$assert->insist(2 + 2 == 5, "2 plus 2 equals 5"); # stop execution on failure
-$assert->ok(42%5);
+$assert->ok(false); # description is optional
+$assert->is(2, 1+1, "basic math works");
+$assert->ok(function()
+{
+    $c = count(get_stuff());
+    return do_stuff($c);
+}, "do_stuff should return true");
+
 $assert->done();
 
+
+function get_stuff(){ return [0]; }
+function do_stuff(int $c){ return 42/$c; }
 ?>

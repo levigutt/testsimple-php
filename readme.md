@@ -16,56 +16,63 @@ get it to work on php8 (it also has not been updated in a while).
 you can make a simple standalone test script, like so:
 
 ```php
+<?php
 require_once("testsimple.php");
 $assert = new TestSimple\Assert();
 
-$assert->ok(false);
-$assert->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
-$assert->insist(2 + 2 == 5, "2 plus 2 equals 5"); # stop execution on failure
-$assert->ok(42 % 5);
+$assert->ok(false); # description is optional
+$assert->is(2, 1+1, "basic math works");
+$assert->ok(function()
+{
+    $c = count(get_stuff());
+    return do_stuff($c);
+}, "do_stuff should return true");
+
 $assert->done();
 ```
 
 and then run it like this:
 ```
-$ php test.php
-F.F
+F..
 Test #1 failed
+    /home/user/development/project/test.php:5
 
-Test #3 failed
-        2 plus 2 equals 5
-FAIL (3 assertions, 2 failures)
+FAIL (3 assertions, 1 failures
 ```
 
 the first test failed, showing no description in the output.
 
-the third one failed too, but since it was a `insist` it stopped any further
-tests from being run.
-
 if we fix the issues and run again:
 
 ```php
+<?php
 require_once("testsimple.php");
 $assert = new TestSimple\Assert();
 
-$assert->ok(true);
-$assert->ok(1 + 1 == 2,     "1 plus 1 equals 2"); # optional description
-$assert->insist(2 + 2 == 4, "2 plus 2 equals 4"); # stop execution on failure
-$assert->ok(42 % 5);
+$assert->ok(true);  # description is optional
+$assert->is(2, 1+1, "basic math works");
+$assert->ok(function()
+{
+    $c = count(get_stuff());
+    return do_stuff($c);
+}, "do_stuff should return true");
+
 $assert->done();
 ```
 
 ```sh
 $ php test.php
 ....
-OK (4 assertions)
+OK (3 assertions)
 ```
 
 now we see that all tests passed.
 
 ## exit codes
 
-if all tests pass, testsimple will exit with zero - indicating no error. if anything failed, it will exit with how many failed. if the tests were run incorrectly, it will exit with 255.
+if all tests pass, testsimple will exit with zero - indicating no error.
+if anything failed, it will exit with how many failed. if the tests were run
+incorrectly, it will exit with 255.
 
 ```
 0           all tests passed
@@ -85,7 +92,7 @@ each test file should contain only the tests:
 
 `t/01-basic.php`:
 ```php
-$assert->ok(1 + 1 == 2, "1 plus 1 equals 2");
+$assert->is(2, 1+1, "1 plus 1 equals 2");
 ```
 
 `t/02-form.php`:
@@ -101,9 +108,11 @@ to run the tests
 ./prove.php [dir]
 ```
 
-it loads from `tests/` unless you specify another directory.
+`prove.php` will load the framework and set up the test object in variable
+`$assert`.
 
-when using `prove.php` the test object is always named `$assert`.
+it loads tests from the directory `tests/` unless you specify another
+directory.
 
 `prove.php` will capture any exceptions thrown, so that an error in one file
 doesn't stop execution of the remaining files. exceptions are reported as
@@ -145,14 +154,16 @@ $assert->ok(false);
 $assert->ok(true, "this will not run")
 ```
 
-if you only need to stop on failure for a specific test, you can instead use
-`insist`:
+if you only need to stop on failure for a specific test, you can instead rely
+on the fact that tests return the original expression:
 
 ```php
-$assert->insist( ENV == 'development', "only run tests on dev-environment");
+$assert->ok( ENV == 'development', "only run tests on dev-environment")
+    or $assert->done();
 
 $db = new mysqli($srv, $usr, $pwd);
-$assert->insist( false == $db->connect_error, "require db connection to proceed");
+$assert->ok( false == $db->connect_error, "require db connection to proceed")
+    or $assert->done();
 ```
 
 **not ok**
@@ -163,6 +174,9 @@ you can use `not_ok($expr)` instead of negating the expression `ok(!$expr)`.
 
 you have to do exception handling yourself when using a standalone test script.
 
-when specifying the number of tests, the actual number of tests reported will be one higher since this literally adds a test at the end to validate the number of tests. however, you do not have to take this into consideration when setting the number of tests.
+when specifying the number of tests, the actual number of tests reported will
+be one higher since this literally adds a test at the end to validate the
+number of tests. however, you do not have to take this into consideration when
+setting the number of tests.
 
 
