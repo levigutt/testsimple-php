@@ -16,5 +16,4 @@ $assert->not_ok(function(){
 
 $assert->ok(fn() => true, "passing arrow functions");
 
-$test_file_order++;
-$assert->ok(4 == $test_file_order, "file #4 comes fourth");
+$assert->is("abc", fn() => "abc", "test return value of arrow function");

@@ -9,6 +9,7 @@ class Assert {
     private string $caller          = '';
     private bool   $is_done         = false;
     public  bool   $stop_on_failure = false;
+    public int     $file_count      = 0;
 
     public function __construct(public int $plan = 0){}
 
@@ -47,6 +48,35 @@ class Assert {
         else
             echo ".";
         flush();
+        return !!$expr;
+    }
+
+    # add and validate a new test
+    # $test->is( 5, "5", "5 == '5'" );
+    public function is($expected, $value, $msg = '')
+    {
+        $bt = debug_backtrace();
+        $caller = array_shift($bt);
+        $this->caller = sprintf("%s:%s", $caller['file'], $caller['line']);
+        if( is_callable($value) )
+        {
+            try {
+                $expr = ($expected === $value());
+            } catch(\Throwable $th)
+            {
+                $expr = false;
+            }
+        }
+        else
+            $expr = ($expected === $value);
+        $this->test_count++;
+        if( !$expr )
+            $this->fail(sprintf("%s\n\texpected %s\n\tgot %s", $msg, $expected instanceof Stringable ? "<$expected>" : print_r($expected, true),
+                                                                     $value    instanceof Stringable ? "<$value>"    : print_r($value, true)));
+        else
+            echo ".";
+        flush();
+        return !!$expr;
     }
 
     # fail the current test
@@ -64,14 +94,6 @@ class Assert {
     public function not_ok($expr, $msg = '')
     {
         $this->ok( $expr, $msg, true );
-    }
-
-    public function insist($expr, $msg = '')
-    {
-        $sof = $this->stop_on_failure;
-        $this->stop_on_failure = true;
-        $this->ok($expr, $msg);
-        $this->stop_on_failure = $sof;
     }
 
     public function done()

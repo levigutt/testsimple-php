@@ -18,6 +18,7 @@ while( $file = readdir($dh) )
 asort($files);
 foreach($files as $file)
 {
+    $assert->file_count++;
     # catch exceptions for each file
     try
     {
