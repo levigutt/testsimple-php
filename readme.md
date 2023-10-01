@@ -33,6 +33,7 @@ $assert->done();
 
 and then run it like this:
 ```
+$ php test.php
 F..
 Test #1 failed
     /home/user/development/project/test.php:5
