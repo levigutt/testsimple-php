@@ -35,6 +35,7 @@ $assert->done();
 run it with `php example/standalone.php`:
 
 ```sh
+$ php example/standalone.php
 .FF
 Test #2 failed
     /home/user/dev/testsimple/example/standalone.php:7
