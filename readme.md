@@ -84,6 +84,29 @@ $ php example/standalone.php
 OK (4 assertions)
 ```
 
+## organizing many tests
+
+for many tests it is best to split them into separate files, `prove.php` is a 
+handy test runner that takes a directory as an argument and runs all the tests 
+in the directory. see `example/tests/`
+
+we need only place the assertions themselves in these files.
+
+`example/tests/some-tests.php`:
+
+```php
+<?php
+
+$assert->is(2, 1+1, "basic math works");
+$assert->is(4, strlen("test"), "test is a four letter word");
+```
+
+```sh
+$ ./prove.php example/tests
+.....
+OK (5 assertions)
+```
+
 ## exit codes
 
 if all tests pass, testsimple will exit with zero - indicating no error.
