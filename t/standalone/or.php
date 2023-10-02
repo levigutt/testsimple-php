@@ -9,8 +9,6 @@ $assert->is(0, $test);
 
 $test = 0;
 $assert->ok(false) or $test++;
-$assert->not_ok(false) or $test++;
-$assert->not_ok(true) or $test++;
-$assert->is(2, $test);
+$assert->is(1, $test);
 
 $assert->done();

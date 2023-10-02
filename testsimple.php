@@ -24,36 +24,52 @@ class Assert {
         }
     }
 
+    private function test($expect, $value) : bool
+    {
+        if( is_callable($value) )
+        {
+            try {
+                $value = $value();
+            } catch(\Throwable $th)
+            {
+                $test = false;
+                if( $expect instanceof \Throwable )
+                {
+                    if( get_class($expect) == get_class($th) )
+                        $test = strlen($expect->getMessage())
+                              ? ($expect->getMessage() == $th->getMessage())
+                              : true;
+                    $expect = sprintf("%s('%s')", get_class($expect), $expect->getMessage());
+                    $value = sprintf("%s('%s')", get_class($th), $th->getMessage());
+                }
+            }
+        }
+        $this->test_count++;
+        return $expect == $value;
+    }
+
     # add and validate a new test
     # $test->ok( 1 + 1 == 2, "1 plus 1 equals 2" );
-    public function ok(mixed $expr, string $msg = '', bool $negate = false)
+    public function ok(mixed $expression, string $description = '', bool $negate = false) : bool
     {
         $bt = debug_backtrace();
         $caller = array_shift($bt);
         $this->caller = sprintf("%s:%s", $caller['file'], $caller['line']);
-        if( is_callable($expr) )
-        {
-            try {
-                $expr = $expr();
-            } catch(\Throwable $th)
-            {
-                $expr = false;
-            }
-        }
-        $this->test_count++;
+        $expect = true;
         if( $negate )
-            $expr = !$expr;
-        if( !$expr )
-            $this->fail($msg);
+            $expect = false;
+        $result = $this->test($expect, $expression);
+        if( !$result )
+            $this->fail($description);
         else
             echo ".";
         flush();
-        return !!$expr;
+        return $result;
     }
 
     # add and validate a new test
     # $test->is( 5, "5", "5 == '5'" );
-    public function is($expected, $value, $msg = '')
+    public function is($expect, $value, $msg = '') : bool
     {
         $bt = debug_backtrace();
         $caller = array_shift($bt);
@@ -62,35 +78,36 @@ class Assert {
         {
             try {
                 $value = $value();
-                $expr = ($expected === $value);
+                $test = ($expect === $value);
             } catch(\Throwable $th)
             {
-                $expr = false;
-                if( $expected instanceof \Throwable )
+                $test = false;
+                if( $expect instanceof \Throwable )
                 {
-                    if( get_class($expected) == get_class($th) )
-                    {
-                        $expr = strlen($expected->getMessage()) ? ($expected->getMessage() == $th->getMessage())
-                                                                : true;
-                    }
-                    $expected = sprintf("%s('%s')", get_class($expected), $expected->getMessage());
+                    $error_types = array_merge(class_parents($th), class_implements($th));
+                    if( get_class($expect) == get_class($th)
+                     || in_array(get_class($expect), $error_types) )
+                        $test = strlen($expect->getMessage())
+                              ? ($expect->getMessage() == $th->getMessage())
+                              : true;
+                    $expect = sprintf("%s('%s')", get_class($expect), $expect->getMessage());
                     $value = sprintf("%s('%s')", get_class($th), $th->getMessage());
                 }
             }
         }
         else
-            $expr = ($expected === $value);
+            $test = ($expect === $value);
         $this->test_count++;
-        if( !$expr )
+        if( !$test )
             $this->fail( sprintf(   "%s\n\texpected: %s\n\tgot:      %s"
                                 ,   $msg
-                                ,   $expected instanceof Stringable ? "<$expected>" : print_r($expected, true)
-                                ,   $value    instanceof Stringable ? "<$value>"    : print_r($value, true)
+                                ,   $expect instanceof Stringable ? "<$expect>" : print_r($expect, true)
+                                ,   $value  instanceof Stringable ? "<$value>"  : print_r($value, true)
                                 ) );
         else
             echo ".";
         flush();
-        return !!$expr;
+        return !!$test;
     }
 
     # fail the current test
@@ -103,11 +120,6 @@ class Assert {
                              ($this->caller ? $this->caller . "\n\t":'').$msg);
         if( $this->stop_on_failure )
             $this->done();
-    }
-
-    public function not_ok($expr, $msg = '')
-    {
-        $this->ok( $expr, $msg, true );
     }
 
     public function done()

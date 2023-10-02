@@ -1,9 +1,14 @@
 <?php
 
-$assert->is(new Exception(), function()
+$assert->is(new Error(), function()
 {
-    throw new Exception('test of exeception');
-}, "simple exception test");
+    throw new Error();
+}, "simple error test");
+
+$assert->is(new Error(), function()
+{
+    throw new ArithmeticError();
+}, "can match error to parent class");
 
 $assert->is(new Exception('test of exception'), function()
 {
@@ -15,6 +20,11 @@ $assert->is(new DivisionByZeroError(), function()
     return 6 / 0;
 }, "catches and compares correctly specific exception types");
 
+$assert->is(new Error(), function()
+{
+    return 6 / 0;
+}, "can match error to ancestor class");
+
 $assert->is('value', function()
 {
     $val = 'value';
@@ -22,10 +32,15 @@ $assert->is('value', function()
     return $val;
 }, "compare value to exception should fail");
 
+$assert->is(new Error('mismatch'), function()
+{
+    throw new Error('something else');
+}, "comparing mismatched exception message should fail");
+
 $assert->is(new Exception('mismatch'), function()
 {
-    throw new Exception('something else');
-}, "comparing mismatched exception message should fail");
+    throw new Error('something else');
+}, "cannot match error to a descendent class");
 
 $assert->is(new Exception(), fn() => throw new Exception(),
     "arrow function also traps and compares Exceptions");

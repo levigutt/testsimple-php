@@ -30,8 +30,8 @@ $assert->ok(str_ends_with($out[11], "t/trace/02-test.php:4"));
 unset($out);
 $result = exec("./prove.php t/exception", $out, $retval);
 $assert->is('E', substr($out[0], strlen($out[0])-1, 1), "exceptions are tallied as 'E'");
-$assert->ok(false !== strpos($result, "FAIL (6 assertions, 3 failures)"),
+$assert->ok(false !== strpos($result, "FAIL (9 assertions, 4 failures)"),
     "exception counts as failure, but not as assertion");
 $assert->ok($result !== strpos($result, "/t/exception/throw_error.php:3"),
     "exceptions shows file and line number");
-$assert->is(3, $retval, "exit code signified number of failures");
+$assert->is(4, $retval, "exit code signified number of failures");
