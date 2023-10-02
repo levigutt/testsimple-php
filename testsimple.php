@@ -61,18 +61,32 @@ class Assert {
         if( is_callable($value) )
         {
             try {
-                $expr = ($expected === $value());
+                $value = $value();
+                $expr = ($expected === $value);
             } catch(\Throwable $th)
             {
                 $expr = false;
+                if( $expected instanceof \Throwable )
+                {
+                    if( get_class($expected) == get_class($th) )
+                    {
+                        $expr = strlen($expected->getMessage()) ? ($expected->getMessage() == $th->getMessage())
+                                                                : true;
+                    }
+                    $expected = sprintf("%s('%s')", get_class($expected), $expected->getMessage());
+                    $value = sprintf("%s('%s')", get_class($th), $th->getMessage());
+                }
             }
         }
         else
             $expr = ($expected === $value);
         $this->test_count++;
         if( !$expr )
-            $this->fail(sprintf("%s\n\texpected %s\n\tgot %s", $msg, $expected instanceof Stringable ? "<$expected>" : print_r($expected, true),
-                                                                     $value    instanceof Stringable ? "<$value>"    : print_r($value, true)));
+            $this->fail( sprintf(   "%s\n\texpected: %s\n\tgot:      %s"
+                                ,   $msg
+                                ,   $expected instanceof Stringable ? "<$expected>" : print_r($expected, true)
+                                ,   $value    instanceof Stringable ? "<$value>"    : print_r($value, true)
+                                ) );
         else
             echo ".";
         flush();
