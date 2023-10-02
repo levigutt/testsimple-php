@@ -1,6 +1,6 @@
 # simple testing framework for php
 
-inspired by  [Test::Simple](https://metacpan.org/pod/Test::Simple) for perl,
+inspired by [Test::Simple](https://metacpan.org/pod/Test::Simple) for perl,
 but not intended to offer identical functionality.
 
 ## background
@@ -13,61 +13,75 @@ get it to work on php8 (it also has not been updated in a while).
 
 ## getting started
 
-you can make a simple standalone test script, like so:
+you can make a simple standalone test script, see `example/standalone.php`:
 
 ```php
-<?php
 require_once("testsimple.php");
 $assert = new TestSimple\Assert();
 
-$assert->ok(false); # description is optional
-$assert->is(2, 1+1, "basic math works");
-$assert->ok(function()
+$assert->ok(get_data());                 # description is optional
+
+$assert->is(3, 1+1, "basic math works"); # is(expected, actual)
+
+$assert->ok(function()                   # pass function to trap errors
 {
-    $c = count(get_stuff());
-    return do_stuff($c);
-}, "do_stuff should return true");
+    $c = new Thing();
+    return $c->run();
+}, "thing can run");
 
 $assert->done();
 ```
 
-and then run it like this:
-```
-$ php test.php
-F..
-Test #1 failed
-    /home/user/development/project/test.php:5
-
-FAIL (3 assertions, 1 failures
-```
-
-the first test failed, showing no description in the output.
-
-if we fix the issues and run again:
-
-```php
-<?php
-require_once("testsimple.php");
-$assert = new TestSimple\Assert();
-
-$assert->ok(true);  # description is optional
-$assert->is(2, 1+1, "basic math works");
-$assert->ok(function()
-{
-    $c = count(get_stuff());
-    return do_stuff($c);
-}, "do_stuff should return true");
-
-$assert->done();
-```
+run it with `php example/standalone.php`:
 
 ```sh
-$ php test.php
-....
-OK (3 assertions)
+.FF
+Test #2 failed
+    /home/user/dev/testsimple/example/standalone.php:7
+    basic math works
+    expected: 3
+    got:      2
+Test #3 failed
+    /home/user/dev/testsimple/example/standalone.php:9
+    thing can run
+FAIL (3 assertions, 2 failures)
 ```
 
-now we see that all tests passed.
+as we can see, two of the tests failed. in the first case it was the test
+itself that was wrong, in the other the API for `Thing` seems to require a
+parameter to the contructor. if this is intended, we should have a test for
+each case
+
+```php
+require_once("testsimple.php");
+$assert = new TestSimple\Assert();
+
+$assert->ok(get_data());
+
+$assert->is(2, 1+1, "basic math works");
+
+$assert->is(new ArgumentCountError(), function()
+{
+    $c = new Thing();
+    return $c->run();
+}, "thing cannot run without speed");
+
+$assert->ok(function()
+{
+    $c = new Thing(5);
+    return $c->run();
+}, "thing can run");
+
+$assert->done();
+```
+
+we run it again:
+
+```sh
+$ php example/standalone.php
+....
+OK (4 assertions)
+```
 
 ## exit codes
 
@@ -83,41 +97,6 @@ incorrectly, it will exit with 255.
 
 if more than 254 tests fail, it will be reported as 254.
 
-## larger test suites
-
-for larger test suites you should organise tests in separate files. the files
-are loaded and run in order, by file name. start the filename with digits to
-control the order of execution.
-
-each test file should contain only the tests:
-
-`t/01-basic.php`:
-```php
-$assert->is(2, 1+1, "1 plus 1 equals 2");
-```
-
-`t/02-form.php`:
-```php
-$form = new Form(42);
-$assert->ok($form->ready(),  "form is ready for use");
-$assert->ok($form->submit(), "submit returns true");
-```
-
-to run the tests
-
-```sh
-./prove.php [dir]
-```
-
-`prove.php` will load the framework and set up the test object in variable
-`$assert`.
-
-it loads tests from the directory `tests/` unless you specify another
-directory.
-
-`prove.php` will capture any exceptions thrown, so that an error in one file
-doesn't stop execution of the remaining files. exceptions are reported as
-failures in the output.
 
 ## other features
 
@@ -136,12 +115,12 @@ you can add one later:
 $assert->plan = 5;
 ```
 
-you can also add and subtract from the plan:
+you can also add or subtract from the plan:
 
 ```php
 if (PHP_OS_FAMILY === "Windows") {
     $assert->plan+= 1;
-    $assert->ok( WinSpecificTest() == 1, "Check the Windows thing");
+    $assert->ok(CheckWindowsThing(), "Check the Windows thing");
 }
 ```
 
@@ -156,24 +135,29 @@ $assert->ok(true, "this will not run")
 ```
 
 if you only need to stop on failure for a specific test, you can instead rely
-on the fact that tests return the original expression:
+on the fact that `ok` and `is` returns true on success and false on failure:
 
 ```php
-$assert->ok( ENV == 'development', "only run tests on dev-environment")
-    or $assert->done();
-
 $db = new mysqli($srv, $usr, $pwd);
-$assert->ok( false == $db->connect_error, "require db connection to proceed")
+$assert->is(false, $db->connect_error, "can connect to db")
     or $assert->done();
 ```
 
-**not ok**
+## exception handling
 
-you can use `not_ok($expr)` instead of negating the expression `ok(!$expr)`.
+if you pass a throwable as the expected value to `is`, it will compare type,
+and message (if defined). it will accept any ancestor class or implemented
+interface as a successful match
+
+```php
+$assert->is(new Exception('Invalid input'), function()
+{
+    $r = new Request('garbage');
+    $r->run();
+}, "Request throws exception on invalid input");
+```
 
 ## caveats
-
-you have to do exception handling yourself when using a standalone test script.
 
 when specifying the number of tests, the actual number of tests reported will
 be one higher since this literally adds a test at the end to validate the
