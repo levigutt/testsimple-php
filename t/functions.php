@@ -6,11 +6,11 @@ $assert->ok(function(){
     return true;
 }, "anonymous functions returning true");
 
-$assert->not_ok(function(){
+$assert->is(false, function(){
     return false;
 }, "anonymous functions returning false");
 
-$assert->not_ok(function(){
+$assert->is(new Error(), function(){
     return 5 / 0;
 }, "anonymous functions traps exceptions");
 
