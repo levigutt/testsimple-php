@@ -24,12 +24,13 @@ class Assert {
         }
     }
 
-    private function test($expect, $value) : bool
+    private function test($expect, $actual) : bool
     {
-        if( is_callable($value) )
+        $test = ($expect == $actual);
+        if( is_callable($actual) )
         {
             try {
-                $value = $value();
+                $actual = $actual();
             } catch(\Throwable $th)
             {
                 $test = false;
@@ -40,12 +41,12 @@ class Assert {
                               ? ($expect->getMessage() == $th->getMessage())
                               : true;
                     $expect = sprintf("%s('%s')", get_class($expect), $expect->getMessage());
-                    $value = sprintf("%s('%s')", get_class($th), $th->getMessage());
+                    $actual = sprintf("%s('%s')", get_class($th), $th->getMessage());
                 }
             }
         }
         $this->test_count++;
-        return $expect == $value;
+        return $test;
     }
 
     # add and validate a new test
@@ -69,16 +70,16 @@ class Assert {
 
     # add and validate a new test
     # $test->is( 5, "5", "5 == '5'" );
-    public function is($expect, $value, $msg = '') : bool
+    public function is($expect, $actual, $msg = '') : bool
     {
         $bt = debug_backtrace();
         $caller = array_shift($bt);
         $this->caller = sprintf("%s:%s", $caller['file'], $caller['line']);
-        if( is_callable($value) )
+        if( is_callable($actual) )
         {
             try {
-                $value = $value();
-                $test = ($expect === $value);
+                $actual = $actual();
+                $test = ($expect === $actual);
             } catch(\Throwable $th)
             {
                 $test = false;
@@ -91,18 +92,18 @@ class Assert {
                               ? ($expect->getMessage() == $th->getMessage())
                               : true;
                     $expect = sprintf("%s('%s')", get_class($expect), $expect->getMessage());
-                    $value = sprintf("%s('%s')", get_class($th), $th->getMessage());
                 }
+                $actual = sprintf("%s('%s')", get_class($th), $th->getMessage());
             }
         }
         else
-            $test = ($expect === $value);
+            $test = ($expect === $actual);
         $this->test_count++;
         if( !$test )
             $this->fail( sprintf(   "%s\n\texpected: %s\n\tgot:      %s"
                                 ,   $msg
                                 ,   $expect instanceof Stringable ? "<$expect>" : print_r($expect, true)
-                                ,   $value  instanceof Stringable ? "<$value>"  : print_r($value, true)
+                                ,   $actual instanceof Stringable ? "<$actual>" : print_r($actual, true)
                                 ) );
         else
             echo ".";

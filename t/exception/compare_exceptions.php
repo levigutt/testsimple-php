@@ -42,6 +42,12 @@ $assert->is(new Exception('mismatch'), function()
     throw new Error('something else');
 }, "cannot match error to a descendent class");
 
+$assert->ok(function()
+{
+    $c = new DoesNotExist();
+    return $c;
+}, "uncaught exception should fail");
+
 $assert->is(new Exception(), fn() => throw new Exception(),
     "arrow function also traps and compares Exceptions");
 
