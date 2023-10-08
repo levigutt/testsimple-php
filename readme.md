@@ -13,6 +13,9 @@ get it to work on php8 (it also has not been updated in a while).
 
 ## SYNOPSIS
 
+writing a test:
+
+example/broken.t:
 ```php
 require_once("testsimple.php");
 $assert = new TestSimple\Assert();
@@ -30,6 +33,7 @@ $assert->ok(function()                   # pass function to trap errors
 $assert->done();
 ```
 
+running a test:
 
 ```sh
 $ php example/broken.t
@@ -43,9 +47,10 @@ not ok 3
 Looks like you failed 1 out of 3 tests
 ```
 
-one of the tests failed. it seems `Thing` required a parameter to be constructed. if this is intended, we should have a test for it:
+we have a failure; `new Thing()` requires a parameter. if this is intended,
+we should have a test for it:
 
-
+example/fixed.t:
 ```php
 require_once("testsimple.php");
 $assert = new TestSimple\Assert();
@@ -69,6 +74,8 @@ $assert->ok(function()
 $assert->done();
 ```
 
+and we run it:
+
 ```sh
 $ php example/fixed.t
 ok 1
@@ -77,6 +84,8 @@ ok 3 - thing cannot run without speed
 ok 4 - thing can run
 1..4
 ```
+
+all good :)
 
 ## EXIT CODES
 
