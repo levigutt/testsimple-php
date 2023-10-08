@@ -1,6 +1,8 @@
+#!/usr/bin/php
 <?php
 
-$assert->plan+= 5;
+require_once "vendor/autoload.php";
+$assert = new TestSimple\Assert(plan: 5);
 
 $assert->ok(true, "true should pass");
 $assert->ok(1,     "1 should pass");

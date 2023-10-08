@@ -1,5 +1,9 @@
 <?php
 
+print "\n\nOUTPUT: ";
+print $assert->output;
+echo "\n\n";
+
 $assert->is(new Error(), function()
 {
     throw new Error();

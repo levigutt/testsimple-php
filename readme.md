@@ -48,65 +48,6 @@ Test #3 failed
 FAIL (3 assertions, 2 failures)
 ```
 
-as we can see, two of the tests failed. in the first case it was the test
-itself that was wrong, in the other the API for `Thing` seems to require a
-parameter to the contructor. if this is intended, we should have a test for
-each case
-
-```php
-require_once("testsimple.php");
-$assert = new TestSimple\Assert();
-
-$assert->ok(get_data());
-
-$assert->is(2, 1+1, "basic math works");
-
-$assert->is(new ArgumentCountError(), function()
-{
-    $c = new Thing();
-    return $c->run();
-}, "thing cannot run without speed");
-
-$assert->ok(function()
-{
-    $c = new Thing(5);
-    return $c->run();
-}, "thing can run");
-
-$assert->done();
-```
-
-we run it again:
-
-```sh
-$ php example/standalone.php
-....
-OK (4 assertions)
-```
-
-## organizing many tests
-
-for many tests it is best to split them into separate files, `prove.php` is a 
-handy test runner that takes a directory as an argument and runs all the tests 
-in the directory. see `example/tests/`
-
-we need only place the assertions themselves in these files.
-
-`example/tests/some-tests.php`:
-
-```php
-<?php
-
-$assert->is(2, 1+1, "basic math works");
-$assert->is(4, strlen("test"), "test is a four letter word");
-```
-
-```sh
-$ ./prove.php example/tests
-.....
-OK (5 assertions)
-```
-
 ## exit codes
 
 if all tests pass, testsimple will exit with zero - indicating no error.

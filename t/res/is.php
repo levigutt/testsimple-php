@@ -1,7 +1,7 @@
 <?php
 
 require_once("testsimple.php");
-$assert = new TestSimple\Assert(2);
+$assert = new TestSimple\Assert(plan: 2, output: 'dot');
 
 // should pass
 $assert->is(5, 5,   "is: strict equality passes");
