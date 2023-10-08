@@ -22,7 +22,7 @@ $assert = new TestSimple\Assert();
 
 $assert->ok(get_data());                 # description is optional
 
-$assert->is(3, 1+1, "basic math works"); # is(expected, actual)
+$assert->is(2, 1+1, "basic math works"); # is(expected, actual)
 
 $assert->ok(function()                   # pass function to trap errors
 {
