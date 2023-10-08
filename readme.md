@@ -6,8 +6,7 @@ but not intended to offer identical functionality.
 ## BACKGROUND
 
 I made this because [PHPUnit](https://phpunit.de/) often feels like overkill
-for smaller projects, and like a poor fit for projects that are not writn 
-in OO-style.
+for smaller projects, and like a poor fit for projects not written in OO-style.
 
 I considered [Peridot/Leo](https://github.com/peridot-php/leo) but could not
 get it to work on php8 (it also has not been updated in a while).
