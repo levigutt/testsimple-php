@@ -48,11 +48,11 @@ class Assert {
 
     private function test($expect, $actual) : bool
     {
-        $test = ($expect == $actual);
         if( is_callable($actual) )
         {
             try {
                 $actual = $actual();
+                $test = ($expect == $actual);
             } catch(\Throwable $th)
             {
                 $test = false;
@@ -66,6 +66,9 @@ class Assert {
                     $actual = sprintf("%s('%s')", get_class($th), $th->getMessage());
                 }
             }
+        }else
+        {
+            $test = ($expect == $actual);
         }
         $this->test_count++;
         return $test;
