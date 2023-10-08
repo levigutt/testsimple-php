@@ -12,8 +12,8 @@ class Assert {
     public int     $file_count      = 0;
     private bool   $plan_printed    = false;
 
-    public function __construct(public int $plan = 0, public string $output = 'tap'){
-        if( 'tap' == $this->output && $this->plan )
+    public function __construct(public int $plan = 0){
+        if( $this->plan )
         {
             printf("1..%d\n", $this->plan);
             $this->plan_printed = true;
@@ -132,8 +132,8 @@ class Assert {
         if( !$test )
             $this->fail( sprintf(   "%s\n\texpected: %s\n\tgot:      %s"
                                 ,   $msg
-                                ,   gettype($expect) .' '. ($expect instanceof Stringable ? "<$expect>" : print_r($expect, true))
-                                ,   gettype($actual) .' '. ($actual instanceof Stringable ? "<$actual>" : print_r($actual, true))
+                                ,   gettype($expect) .' '. (can_print($expect) ? "<$expect>" : print_r($expect, true))
+                                ,   gettype($actual) .' '. (can_print($actual) ? "<$actual>" : print_r($actual, true))
                                 ) );
         else
             $this->pass($msg);
@@ -142,18 +142,17 @@ class Assert {
     }
 
     # fail the current test
-    public function fail(string $msg, string $chr = 'F')
+    public function fail(string $description)
     {
-        echo 'tap' == $this->output ? sprintf(  "%s %d"
-                                             ,  "not ok"
-                                             ,  $this->test_count
-                                             )
-                                    : $chr;
+        printf(  "%s %d"
+              ,  "not ok"
+              ,  $this->test_count
+              );
         $this->fail_count++;
 
         $this->diag(sprintf(   "\nTest #%d failed\n\t%s"
                            ,   $this->test_count
-                           ,   ($this->caller ? $this->caller . "\n\t":'').$msg
+                           ,   ($this->caller ? $this->caller . "\n\t":'').$description
                            ));
         if( $this->stop_on_failure )
             $this->done();
@@ -161,32 +160,25 @@ class Assert {
 
     public function pass(string $description = '')
     {
-        if( 'tap' == $this->output )
-            printf(  "%s %d%s\n"
-                  ,  "ok"
-                  ,  $this->test_count
-                  ,  ($description ? " - $description" : '')
-                  );
-        else
-            print ".";
+        printf(  "%s %d%s\n"
+              ,  "ok"
+              ,  $this->test_count
+              ,  ($description ? " - $description" : '')
+              );
     }
 
     public function diag(string $msg)
     {
-        $error = join('tap' == $this->output ? "\n#" : "\n", explode("\n", $msg));
+        $error = join("\n#", explode("\n", $msg));
         if( "\n" != substr(strlen($error)-1, 1) )
             $error.= "\n";
-        if( 'tap' == $this->output )
-            print $error;
-        else
-            $this->errors[] = $error;
+        print $error;
     }
 
     public function done()
     {
         $this->is_done = true;
-        if( 'tap' == $this->output && !$this->plan_printed )
-            printf("1..%d\n", $this->test_count);
+        printf("1..%d\n", $this->test_count);
         $this->print_result();
         if( 0 == $this->fail_count && !$this->check_plan() )
             exit(255);
@@ -195,19 +187,7 @@ class Assert {
 
     private function check_plan()
     {
-        if( $this->plan == 0 || $this->plan == $this->test_count )
-            return true;
-
-        if( $this->plan != $this->test_count )
-        {
-            $this->diag(sprintf(  "wrong number of tests\n\texpected %d, but ran %d\n"
-                               ,  $this->plan
-                               ,  $this->test_count
-                               )
-                       );
-            return false;
-        }
-        return true;
+        return !($this->plan > 0 && $this->plan != $this->test_count);
     }
 
     private function print_result()
@@ -215,25 +195,19 @@ class Assert {
         foreach( $this->errors as $error )
             print $error;
 
-        if( 'tap' == $this->output )
-        {
-            if( $this->fail_count > 0 )
-                printf(  "Looks like you failed %d out of %d tests\n"
-                      ,  $this->fail_count
-                      ,  $this->test_count
-                      );
-        }else
-        {
-            if( $this->fail_count == 0 )
-                printf("\n\033[92mOK (%d assertions)", $this->test_count);
-            else
-                printf("\n\033[91mFAIL (%d assertions, %d failures)",
-                    $this->test_count, $this->fail_count);
-            print "\033[0m\n";
-        }
+        if( $this->fail_count > 0 )
+            printf(  "Looks like you failed %d out of %d tests\n"
+                  ,  $this->fail_count
+                  ,  $this->test_count
+                  );
     }
 
 }
 
+
+function can_print($var) : bool
+{
+    return ($var instanceOf Stringable) || in_array(gettype($var), ['string', 'int']);
+}
 
 

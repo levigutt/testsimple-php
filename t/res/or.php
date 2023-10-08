@@ -1,7 +1,7 @@
 <?php
 
 require_once("testsimple.php");
-$assert = new TestSimple\Assert(plan: 2, output: 'dot');
+$assert = new TestSimple\Assert(plan: 4);
 
 $test = 0;
 $assert->ok(1) or $test++;

@@ -1,6 +1,6 @@
 <?php
 
 require_once "testsimple.php";
-$assert = new TestSimple\Assert(output: 'dot');
+$assert = new TestSimple\Assert();
 
 $assert->ok(true);
