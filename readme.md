@@ -1,20 +1,21 @@
-# simple testing framework for php
+# SIMPLE TESTING FRAMEWORK FOR PHP
 
 inspired by [Test::Simple](https://metacpan.org/pod/Test::Simple) for perl,
 but not intended to offer identical functionality.
 
-## background
+## BACKGROUND
 
 I made this because [PHPUnit](https://phpunit.de/) often feels like overkill
-for smaller projects.
+for smaller projects, and like a poor fit for projects not written in OO-style.
 
 I considered [Peridot/Leo](https://github.com/peridot-php/leo) but could not
 get it to work on php8 (it also has not been updated in a while).
 
-## getting started
+## SYNOPSIS
 
-you can make a simple standalone test script, see `example/standalone.php`:
+writing a test:
 
+example/broken.t:
 ```php
 require_once("testsimple.php");
 $assert = new TestSimple\Assert();
@@ -32,23 +33,61 @@ $assert->ok(function()                   # pass function to trap errors
 $assert->done();
 ```
 
-run it with `php example/standalone.php`:
+running a test:
 
 ```sh
-$ php example/standalone.php
-.FF
-Test #2 failed
-    /home/user/dev/testsimple/example/standalone.php:7
-    basic math works
-    expected: 3
-    got:      2
-Test #3 failed
-    /home/user/dev/testsimple/example/standalone.php:9
-    thing can run
-FAIL (3 assertions, 2 failures)
+$ php example/broken.t
+ok 1
+ok 2 - basic math works
+not ok 3
+#Test #3 failed
+#   ../testsimple/example/broken.t:11
+#   thing can run
+1..3
+Looks like you failed 1 out of 3 tests
 ```
 
-## exit codes
+we have a failure; `new Thing()` requires a parameter. if this is intended,
+we should have a test for it:
+
+example/fixed.t:
+```php
+require_once("testsimple.php");
+$assert = new TestSimple\Assert();
+
+$assert->ok(true);
+
+$assert->is(2, 1+1, "basic math works");
+
+$assert->is(new ArgumentCountError(), function()
+{
+    $c = new Thing();
+    return $c->run();
+}, "thing cannot run without speed");
+
+$assert->ok(function()
+{
+    $c = new Thing(5);
+    return $c->run();
+}, "thing can run");
+
+$assert->done();
+```
+
+and we run it:
+
+```sh
+$ php example/fixed.t
+ok 1
+ok 2 - basic math works
+ok 3 - thing cannot run without speed
+ok 4 - thing can run
+1..4
+```
+
+all good :)
+
+## EXIT CODES
 
 if all tests pass, testsimple will exit with zero - indicating no error.
 if anything failed, it will exit with how many failed. if the tests were run
@@ -62,53 +101,7 @@ incorrectly, it will exit with 255.
 
 if more than 254 tests fail, it will be reported as 254.
 
-
-## other features
-
-**test plan**
-
-you can specify the number of tests to be run upfront as an extra precaution.
-
-```php
-$assert = new Assert(5); # will fail unless exactly 5 tests are run
-```
-
-when using `prove.php`, the test object is constructed without a test plan, but
-you can add one later:
-
-```php
-$assert->plan = 5;
-```
-
-you can also add or subtract from the plan:
-
-```php
-if (PHP_OS_FAMILY === "Windows") {
-    $assert->plan+= 1;
-    $assert->ok(CheckWindowsThing(), "Check the Windows thing");
-}
-```
-
-**stop on failure**
-
-you can instruct testsimple to stop the test suit if it encounters a failure.
-
-```php
-$assert->stop_on_failure = true;
-$assert->ok(false);
-$assert->ok(true, "this will not run")
-```
-
-if you only need to stop on failure for a specific test, you can instead rely
-on the fact that `ok` and `is` returns true on success and false on failure:
-
-```php
-$db = new mysqli($srv, $usr, $pwd);
-$assert->is(false, $db->connect_error, "can connect to db")
-    or $assert->done();
-```
-
-## exception handling
+## TESTING EXCEPTIONS
 
 if you pass a throwable as the expected value to `is`, it will compare type,
 and message (if defined). it will accept any ancestor class or implemented
@@ -122,7 +115,7 @@ $assert->is(new Exception('Invalid input'), function()
 }, "Request throws exception on invalid input");
 ```
 
-## caveats
+## CAVEATS
 
 when specifying the number of tests, the actual number of tests reported will
 be one higher since this literally adds a test at the end to validate the

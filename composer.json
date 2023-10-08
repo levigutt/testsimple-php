@@ -6,6 +6,5 @@
         "files": ["testsimple.php"]
     },
     "minimum-stability": "dev",
-    "prefer-stable": true,
-    "bin": ["prove.php"]
+    "prefer-stable": true
 }
