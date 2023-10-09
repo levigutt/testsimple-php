@@ -117,9 +117,10 @@ class Assert {
 
     private function fail(string $failure, string $description = null)
     {
-        printf(  "%s %d"
+        printf(  "%s %d%s"
               ,  "not ok"
               ,  $this->test_count
+              ,  $description ? " - $description" : ''
               );
         $this->fail_count++;
 
