@@ -1,25 +1,27 @@
 #!/usr/bin/env php
 <?php
 
-require_once("vendor/autoload.php");
+require_once "vendor/autoload.php";
+require_once "t/lib/test-parser.php";
 $assert = new TestSimple\Assert();
 
-unset($out);
 $result = exec("php t/res/plan_prepare.php", $out, $retval);
-$assert->is("1..4", $out[0], "reporting of number of tests");
-$assert->ok(0 === strpos($out[1],  "ok 1"));
-$assert->ok(0 === strpos($out[2],  "ok 2"));
-$assert->ok(0 === strpos($out[3],  "ok 3"));
-$assert->ok(0 === strpos($out[4],  "ok 4"));
-$assert->is(false, isset($out[5]));
+$parsed = parse_output($out);
+$assert->is("1..4", $parsed[0]['test'], "reporting of number of tests");
+$assert->is("ok 1", $parsed[1]['test']);
+$assert->is("ok 2", $parsed[2]['test']);
+$assert->is("ok 3", $parsed[3]['test']);
+$assert->is("ok 4", $parsed[4]['test']);
+$assert->is(false, isset($parsed[5]));
 
 unset($out);
 $result = exec("php t/res/plan_done.php", $out, $retval);
-$test_count = 0;
-foreach($out as $line)
-    if( 0 === strpos($line, "ok ") )
-        $test_count++;
-
-$assert->is("1..$test_count", $line, "reporting of number of tests");
+$parsed = parse_output($out);
+$test_count = count(array_filter(  $parsed
+                                ,  fn($x) => str_starts_with($x['test'],'ok')
+                                )
+                   );
+$assert->is("1..$test_count", $parsed[count($parsed)-1]['test'],
+    "reporting of number of tests");
 
 $assert->done();

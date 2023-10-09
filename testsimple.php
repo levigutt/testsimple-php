@@ -5,7 +5,6 @@ namespace TestSimple;
 class Assert {
     private int    $test_count      = 0;
     private int    $fail_count      = 0;
-    private array  $errors          = [];
     private string $caller          = '';
     private bool   $is_done         = false;
     public  bool   $stop_on_failure = false;
@@ -22,87 +21,59 @@ class Assert {
 
     public function __destruct()
     {
-        if( !$this->is_done )
+        if( $this->is_done )
+            return;
+        if( $this->plan > 0 )
         {
-            if( $this->plan > 0 )
-            {
-                if( $this->fail_count == 0 && $this->plan == $this->test_count )
-                    exit(0);
-                if( $this->plan != $this->test_count )
-                    $this->diag(sprintf(  "wrong number of tests\n\texpected %d, but ran %d\n"
-                                       ,  $this->plan
-                                       ,  $this->test_count
-                                       )
-                               );
-                if( $this->fail_count )
-                    $this->done();
-            }else
-            {
-                $this->stop_on_failure = false;
-                $this->fail("->done() was not called");
-                $this->print_result();
-            }
-            exit(255);
+            if( $this->fail_count == 0 )
+                exit(0);
+            if( $this->fail_count )
+                $this->done();
         }
+        $this->print_result();
+        exit(255);
     }
 
     private function test($expect, $actual) : bool
     {
-        if( is_callable($actual) )
+        if( !is_callable($actual) )
+            return ($expect == $actual);
+
+        try
         {
-            try {
-                $actual = $actual();
-                $test = ($expect == $actual);
-            } catch(\Throwable $th)
-            {
-                $test = false;
-                if( $expect instanceof \Throwable )
-                {
-                    if( get_class($expect) == get_class($th) )
-                        $test = strlen($expect->getMessage())
-                              ? ($expect->getMessage() == $th->getMessage())
-                              : true;
-                    $expect = sprintf("%s('%s')", get_class($expect), $expect->getMessage());
-                    $actual = sprintf("%s('%s')", get_class($th), $th->getMessage());
-                }
-            }
-        }else
+            return ($expect == $actual());
+        } catch(\Throwable $th)
         {
-            $test = ($expect == $actual);
+            return false;
         }
-        $this->test_count++;
-        return $test;
     }
 
-    # add and validate a new test
-    # $test->ok( 1 + 1 == 2, "1 plus 1 equals 2" );
-    public function ok(mixed $expression, string $description = '', bool $negate = false) : bool
+    public function ok(mixed $expression, string $description = '') : bool
     {
-        $bt = debug_backtrace();
-        $caller = array_shift($bt);
-        $this->caller = sprintf("%s:%s", $caller['file'], $caller['line']);
-        $expect = true;
-        if( $negate )
-            $expect = false;
-        $result = $this->test($expect, $expression);
+        $this->test_count++;
+        $trace = debug_backtrace();
+        $caller = array_shift($trace);
+        $file = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
+        $this->caller = sprintf("%s:%s", $file, $caller['line']);
+        $result = $this->test(true, $expression);
         if( !$result )
             $this->fail($description);
         else
             $this->pass($description);
-        flush();
         return $result;
     }
 
-    # add and validate a new test
-    # $test->is( 5, "5", "5 == '5'" );
-    public function is($expect, $actual, $msg = '') : bool
+    public function is($expect, $actual, $description = '') : bool
     {
-        $bt = debug_backtrace();
-        $caller = array_shift($bt);
-        $this->caller = sprintf("%s:%s", $caller['file'], $caller['line']);
+        $this->test_count++;
+        $trace = debug_backtrace();
+        $caller = array_shift($trace);
+        $file = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
+        $this->caller = sprintf("%s:%s", $file, $caller['line']);
         if( is_callable($actual) )
         {
-            try {
+            try
+            {
                 $actual = $actual();
                 $test = ($expect === $actual);
             } catch(\Throwable $th)
@@ -110,11 +81,11 @@ class Assert {
                 $test = false;
                 if( $expect instanceof \Throwable )
                 {
-                    $error_types = array_merge(  class_parents($th)
-                                              ,  class_implements($th)
-                                              );
-                    if( get_class($expect) == get_class($th)
-                     || in_array(get_class($expect), $error_types) )
+                    $valid_error_classes = array_merge(  class_parents($th)
+                                                      ,  class_implements($th)
+                                                      ,  [get_class($th)]
+                                                      );
+                    if( in_array(get_class($expect), $valid_error_classes) )
                         $test = strlen($expect->getMessage())
                               ? ($expect->getMessage() == $th->getMessage())
                               : true;
@@ -131,21 +102,23 @@ class Assert {
         }
         else
             $test = ($expect === $actual);
-        $this->test_count++;
         if( !$test )
             $this->fail( sprintf(   "%s\n\texpected: %s\n\tgot:      %s"
-                                ,   $msg
-                                ,   gettype($expect) .' '. (can_print($expect) ? "<$expect>" : print_r($expect, true))
-                                ,   gettype($actual) .' '. (can_print($actual) ? "<$actual>" : print_r($actual, true))
+                                ,   $description
+                                ,   (can_print($expect) ? "<$expect>"
+                                                        : print_r($expect, true)
+                                    )
+                                ,   (can_print($actual) ? "<$actual>"
+                                                        : print_r($actual, true)
+                                    )
                                 ) );
         else
-            $this->pass($msg);
+            $this->pass($description);
         flush();
         return !!$test;
     }
 
-    # fail the current test
-    public function fail(string $description)
+    private function fail(string $description)
     {
         printf(  "%s %d"
               ,  "not ok"
@@ -153,15 +126,16 @@ class Assert {
               );
         $this->fail_count++;
 
-        $this->diag(sprintf(   "\nTest #%d failed\n\t%s"
-                           ,   $this->test_count
-                           ,   ($this->caller ? $this->caller . "\n\t":'').$description
-                           ));
+        $this->diag(sprintf(   "\n\tFailed test '%s'%s"
+                           ,   $description
+                           ,   $this->caller ? "\n\tin $this->caller" : ''
+                           )
+                   );
         if( $this->stop_on_failure )
             $this->done();
     }
 
-    public function pass(string $description = '')
+    private function pass(string $description = '')
     {
         printf(  "%s %d%s\n"
               ,  "ok"
@@ -170,7 +144,7 @@ class Assert {
               );
     }
 
-    public function diag(string $msg)
+    private function diag(string $msg)
     {
         $error = join("\n#", explode("\n", $msg));
         if( "\n" != substr(strlen($error)-1, 1) )
@@ -195,9 +169,6 @@ class Assert {
 
     private function print_result()
     {
-        foreach( $this->errors as $error )
-            print $error;
-
         if( $this->fail_count > 0 )
             printf(  "Looks like you failed %d out of %d tests\n"
                   ,  $this->fail_count
@@ -210,7 +181,8 @@ class Assert {
 
 function can_print($var) : bool
 {
-    return ($var instanceOf Stringable) || in_array(gettype($var), ['string', 'int']);
+    return ($var instanceOf Stringable)
+        || in_array(gettype($var), ['string', 'int', 'float', 'double']);
 }
 
 
