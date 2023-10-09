@@ -9,14 +9,10 @@ class Assert {
     private bool   $is_done         = false;
     public  bool   $stop_on_failure = false;
     public int     $file_count      = 0;
-    private bool   $plan_printed    = false;
 
     public function __construct(public int $plan = 0){
         if( $this->plan )
-        {
             printf("1..%d\n", $this->plan);
-            $this->plan_printed = true;
-        }
     }
 
     public function __destruct()
@@ -57,7 +53,7 @@ class Assert {
         $this->caller = sprintf("%s:%s", $file, $caller['line']);
         $result = $this->test(true, $expression);
         if( !$result )
-            $this->fail($description);
+            $this->fail('', $description);
         else
             $this->pass($description);
         return $result;
@@ -103,22 +99,23 @@ class Assert {
         else
             $test = ($expect === $actual);
         if( !$test )
-            $this->fail( sprintf(   "%s\n\texpected: %s\n\tgot:      %s"
-                                ,   $description
-                                ,   (can_print($expect) ? "<$expect>"
-                                                        : print_r($expect, true)
-                                    )
-                                ,   (can_print($actual) ? "<$actual>"
-                                                        : print_r($actual, true)
-                                    )
-                                ) );
+            $this->fail(  sprintf(   "\n\texpected: %s\n\t     got: %s"
+                                 ,   (can_print($expect) ? "<$expect>"
+                                                         : print_r($expect, true)
+                                     )
+                                 ,   (can_print($actual) ? "<$actual>"
+                                                         : print_r($actual, true)
+                                     )
+                                 )
+                       ,  $description
+                       );
         else
             $this->pass($description);
         flush();
         return !!$test;
     }
 
-    private function fail(string $description)
+    private function fail(string $failure, string $description = null)
     {
         printf(  "%s %d"
               ,  "not ok"
@@ -126,8 +123,9 @@ class Assert {
               );
         $this->fail_count++;
 
-        $this->diag(sprintf(   "\n\tFailed test '%s'%s"
-                           ,   $description
+        $this->diag(sprintf(   "\n\tFailed test %s%s%s"
+                           ,   $description   ? "'$description'"      : ''
+                           ,   $failure
                            ,   $this->caller ? "\n\tin $this->caller" : ''
                            )
                    );
