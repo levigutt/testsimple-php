@@ -39,10 +39,9 @@ running a test:
 $ php example/broken.t
 ok 1
 ok 2 - basic math works
-not ok 3
-#Test #3 failed
-#   ../testsimple/example/broken.t:11
-#   thing can run
+not ok 3 - thing can run
+#	Failed test 'thing can run'
+#	at example/broken.phpt:11
 1..3
 Looks like you failed 1 out of 3 tests
 ```

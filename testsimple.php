@@ -24,7 +24,7 @@ class Assert {
             if( $this->fail_count == 0 )
                 exit(0);
             if( $this->fail_count )
-                $this->done();
+                $this->done(false);
         }
         $this->print_result();
         exit(255);
@@ -66,6 +66,7 @@ class Assert {
         $caller = array_shift($trace);
         $file = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
         $this->caller = sprintf("%s:%s", $file, $caller['line']);
+        $add_brackets = true;
         if( is_callable($actual) )
         {
             try
@@ -74,6 +75,7 @@ class Assert {
                 $test = ($expect === $actual);
             } catch(\Throwable $th)
             {
+                $add_brackets = false;
                 $test = false;
                 if( $expect instanceof \Throwable )
                 {
@@ -100,10 +102,10 @@ class Assert {
             $test = ($expect === $actual);
         if( !$test )
             $this->fail(  sprintf(   "\n\texpected: %s\n\t     got: %s"
-                                 ,   (can_print($expect) ? "<$expect>"
+                                 ,   (can_print($expect) ? $add_brackets ? "<$expect>" : $expect
                                                          : print_r($expect, true)
                                      )
-                                 ,   (can_print($actual) ? "<$actual>"
+                                 ,   (can_print($actual) ? $add_brackets ? "<$actual>" : $actual
                                                          : print_r($actual, true)
                                      )
                                  )
@@ -125,9 +127,9 @@ class Assert {
         $this->fail_count++;
 
         $this->diag(sprintf(   "\n\tFailed test %s%s%s"
-                           ,   $description   ? "'$description'"      : ''
+                           ,   $description   ? "'$description'\n\t"    : ''
+                           ,   $this->caller ? "at $this->caller" : ''
                            ,   $failure
-                           ,   $this->caller ? "\n\tin $this->caller" : ''
                            )
                    );
         if( $this->stop_on_failure )
@@ -151,10 +153,11 @@ class Assert {
         print $error;
     }
 
-    public function done()
+    public function done(bool $show_plan = true)
     {
         $this->is_done = true;
-        printf("1..%d\n", $this->test_count);
+        if( $show_plan )
+            printf("1..%d\n", $this->test_count);
         $this->print_result();
         if( 0 == $this->fail_count && !$this->check_plan() )
             exit(255);
@@ -177,11 +180,10 @@ class Assert {
 
 }
 
-
 function can_print($var) : bool
 {
-    return ($var instanceOf Stringable)
-        || in_array(gettype($var), ['string', 'int', 'float', 'double']);
+    return $var instanceOf Stringable
+        || in_array(gettype($var), ['string', 'integer', 'double']);
 }
 
 
