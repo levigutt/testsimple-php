@@ -74,9 +74,9 @@ class Assert {
                           ,  $description
                           ,  sprintf(   "\n%8s: %s\n%8s: %s"
                                     ,   'expected'
-                                    ,   inspect_var($expect)
+                                    ,   $this->inspect_var($expect)
                                     ,   'got'
-                                    ,   inspect_var($actual)
+                                    ,   $this->inspect_var($actual)
                                     )
                           );
     }
@@ -99,8 +99,7 @@ class Assert {
                          ,  string $failure = null
                          )
     {
-        printf(  "%s %d%s"
-              ,  "not ok"
+        printf(  "not ok %d%s"
               ,  $this->test_count
               ,  $description ? " - $description" : ''
               );
@@ -119,8 +118,7 @@ class Assert {
 
     private function pass(string $description = '')
     {
-        printf(  "%s %d%s\n"
-              ,  "ok"
+        printf(  "ok %d%s\n"
               ,  $this->test_count
               ,  ($description ? " - $description" : '')
               );
@@ -141,30 +139,19 @@ class Assert {
         $file = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
         return sprintf("%s:%s", $file, $caller['line']);
     }
-}
 
-function inspect_var($var) : string
-{
-    if( $var instanceOf \Throwable )
-        return sprintf('%s("%s")', get_class($var), $var->getMessage());
-    if( 'string' == gettype($var) )
-        return sprintf('string(%d) "%s"', strlen($var), $var);
-    if( 'array' == gettype($var) )
+    private function inspect_var($var) : string
     {
-        $inspection = '[';
-        $count = 0;
-        foreach($var as $item)
-        {
-            if( $count )
-                $inspection.= ',';
-            $inspection.= inspect_var($item);
-            $count++;
-        }
-        $inspection.= ']';
-        return $inspection;
+        if( $var instanceOf \Throwable )
+            return sprintf('%s("%s")', get_class($var), $var->getMessage());
+        if( 'string' == gettype($var) )
+            return sprintf('string(%d) "%s"', strlen($var), $var);
+        if( 'array' == gettype($var) )
+            return sprintf(  '[%s]'
+                          ,  join(',', array_map(fn($x) => $this->inspect_var($x), $var))
+                          );
+        if( 'object' == gettype($var) )
+            return sprintf('object(%s)', get_class($var));
+        return sprintf('%s(%s)', gettype($var), $var);
     }
-    if( 'object' == gettype($var) )
-        return sprintf('object(%s)', get_class($var));
-    return sprintf('%s(%s)', gettype($var), $var);
 }
-
