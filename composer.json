@@ -6,5 +6,8 @@
         "files": ["testsimple.php"]
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "scripts": {
+        "test": "prove --verbose t"
+    }
 }
