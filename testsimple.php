@@ -40,24 +40,19 @@ class Assert {
         $this->test_count++;
         $trace = debug_backtrace();
         $calling_location = $this->format_calling_location($trace);
-
-        $result = !!$expression;
-        if( is_callable($expression) )
+        try
         {
-            try
+            if( is_callable($expression) ? $expression() : $expression )
             {
-                $result = !!$expression();
-            } catch(\Throwable $th)
-            {
-                $result = false;
+                $this->pass($description);
+                return true;
             }
-        }
-
-        if( !$result )
             $this->fail('', $description, $calling_location);
-        else
-            $this->pass($description);
-        return $result;
+        } catch(\Throwable $th)
+        {
+            $this->fail($th->getMessage(), $description, $calling_location);
+        }
+        return false;
     }
 
     public function is($expect, $actual, $description = '') : bool
@@ -65,31 +60,31 @@ class Assert {
         $this->test_count++;
         $trace = debug_backtrace();
         $calling_location = $this->format_calling_location($trace);
-        $test = ($expect === $actual);
-        if( is_callable($actual) )
+        $result = false;
+        try
         {
-            try
+            if( $expect === (is_callable($actual) ? $actual() : $actual) )
             {
-                $actual = $actual();
-                $test = ($expect === $actual);
-            } catch(\Throwable $th)
-            {
-                $test = false;
-                if( $expect instanceof \Throwable )
-                {
-                    $valid_error_classes = array_merge(  class_parents($th)
-                                                      ,  class_implements($th)
-                                                      ,  [get_class($th)]
-                                                      );
-                    if( in_array(get_class($expect), $valid_error_classes) )
-                        $test = strlen($expect->getMessage())
-                              ? ($expect->getMessage() == $th->getMessage())
-                              : true;
-                }
-                $actual = $th;
+                $this->pass($description);
+                return true;
             }
+        } catch(\Throwable $th)
+        {
+            if( $expect instanceof \Throwable )
+            {
+                $valid_error_classes = array_merge(  class_parents($th)
+                                                  ,  class_implements($th)
+                                                  ,  [get_class($th)]
+                                                  );
+                if( in_array(get_class($expect), $valid_error_classes) )
+                    $result = strlen($expect->getMessage())
+                          ? ($expect->getMessage() == $th->getMessage())
+                          : true;
+            }
+            $actual = $th;
         }
-        if( $test ) $this->pass($description);
+        if( $result )
+            $this->pass($description);
         else
         {
             $expect_dump = inspect_var($expect);
@@ -102,8 +97,7 @@ class Assert {
                        ,  $calling_location
                        );
         }
-        flush();
-        return $test;
+        return $result;
     }
 
     private function fail(  string $failure
@@ -119,7 +113,7 @@ class Assert {
         $this->fail_count++;
 
         $this->diag(sprintf(   "\n\tFailed test %s%s%s"
-                           ,   $description   ? "'$description'\n\t"    : ''
+                           ,   $description      ? "'$description'\n\t"   : ''
                            ,   $calling_location ? "at $calling_location" : ''
                            ,   $failure
                            )
