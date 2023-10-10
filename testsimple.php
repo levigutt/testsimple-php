@@ -145,6 +145,8 @@ class Assert {
         if( $show_plan )
             printf("1..%d\n", $this->test_count);
         $this->print_result();
+        if( $this->plan > $this->test_count )
+            $this->fail_count+= $this->plan - $this->test_count;
         if( 0 == $this->test_count
         || (0 == $this->fail_count && !$this->check_plan()) )
             exit(255);
