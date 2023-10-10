@@ -7,11 +7,4 @@ $assert = new TestSimple\Assert(plan: 4);
 $assert->is([1,2,3], [3,2,1]);
 $assert->is([1,2,3], ['a','b']);
 $assert->is([[1],2,3], [3,[2],1]);
-$assert->is(    [    'name' => 'robert'
-                ,    'nick' => 'bob'
-                ]
-           ,    [    'nick' => 'frank'
-                ,    'name' => 'francis'
-                ]
-           );
-
+$assert->is(['name' => 'robert', 'nick' => 'bob'], ['nick' => 'frank', 'name' => 'francis']);
