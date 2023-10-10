@@ -46,23 +46,23 @@ $expected = <<<EOF
 not ok 1 - int vs string
 #	Failed test 'int vs string'
 #	at t/res/expectations.php:6
-#	expected: <5>
-#	     got: <5>
+#	expected: int(5)
+#	     got: string(1) "5"
 not ok 2 - wrong value
 #	Failed test 'wrong value'
 #	at t/res/expectations.php:7
-#	expected: <1>
-#	     got: <0>
+#	expected: int(1)
+#	     got: int(0)
 not ok 3 - wrong error type
 #	Failed test 'wrong error type'
 #	at t/res/expectations.php:8
-#	expected: Exception('')
-#	     got: Error('')
+#	expected: Exception("")
+#	     got: Error("")
 not ok 4 - wrong error message
 #	Failed test 'wrong error message'
 #	at t/res/expectations.php:9
-#	expected: Error('expected')
-#	     got: Error('got')
+#	expected: Error("expected")
+#	     got: Error("got")
 Looks like you failed 4 out of 4 tests
 EOF;
 $tests[] = [  'script'        => 'php t/res/expectations.php'
@@ -78,13 +78,13 @@ ok 2 - is: can test callable return value
 not ok 3 - is: loose equality fails
 #	Failed test 'is: loose equality fails'
 #	at t/res/is.php:11
-#	expected: <5>
-#	     got: <5>
+#	expected: int(5)
+#	     got: string(1) "5"
 not ok 4 - is: not equal
 #	Failed test 'is: not equal'
 #	at t/res/is.php:12
-#	expected: <1>
-#	     got: <0>
+#	expected: int(1)
+#	     got: int(0)
 Looks like you failed 2 out of 4 tests
 EOL;
 $tests[] = [  'script'        => 'php t/res/is.php'
