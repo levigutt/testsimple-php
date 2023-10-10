@@ -3,36 +3,39 @@
 namespace TestSimple;
 
 class Assert {
-    private int    $test_count      = 0;
-    private int    $fail_count      = 0;
-    private bool   $is_done         = false;
-    public  bool   $stop_on_failure = false;
+    private int  $test_count      = 0;
+    private int  $fail_count      = 0;
+    private bool $is_done         = false;
 
-    public function __construct(public int $plan = 0){
+    public function __construct(  public int $plan = 0
+                               ,  public bool $stop_on_failure = false
+                               )
+    {
         if( $this->plan )
             printf("1..%d\n", $this->plan);
     }
 
     public function __destruct()
     {
-        if( $this->is_done )
-            return;
-        if( $this->plan > 0 )
-        {
-            if( $this->fail_count == 0 )
-                exit(0);
-            if( $this->fail_count )
-                $this->done(false);
-        }
-        $this->print_result();
-        exit(255);
+        $missing_tests = $this->plan - $this->test_count;
+        if( 0 < $missing_tests )
+            $this->fail_count+= $missing_tests;
+        if( $this->fail_count > 0 )
+            printf(  "Looks like you failed %d out of %d tests\n"
+                  ,  $this->fail_count
+                  ,  $this->test_count
+                  );
+        $exit_code = $this->fail_count > 254 ? 254 : $this->fail_count;
+        if( 0 == $this->test_count || (!$this->is_done && $this->plan == 0) )
+            $exit_code = 255;
+        exit($exit_code);
     }
 
-    private function format_calling_location($trace) : string
+    public function done()
     {
-        $caller = array_shift($trace);
-        $file = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
-        return sprintf("%s:%s", $file, $caller['line']);
+        $this->is_done = true;
+        printf("1..%d\n", $this->test_count);
+        exit; // destructor prints result and sets exit code
     }
 
     public function ok(mixed $expression, string $description = '') : bool
@@ -40,19 +43,16 @@ class Assert {
         $this->test_count++;
         $trace = debug_backtrace();
         $calling_location = $this->format_calling_location($trace);
+        $error = '';
         try
         {
             if( is_callable($expression) ? $expression() : $expression )
-            {
-                $this->pass($description);
-                return true;
-            }
-            $this->fail('', $description, $calling_location);
-        } catch(\Throwable $th)
+                return $this->pass($description);
+        } catch(\Throwable $err)
         {
-            $this->fail($th->getMessage(), $description, $calling_location);
+            $error = $err->getMessage();
         }
-        return false;
+        return $this->fail($calling_location, $description, '');
     }
 
     public function is($expect, $actual, $description = '') : bool
@@ -60,49 +60,43 @@ class Assert {
         $this->test_count++;
         $trace = debug_backtrace();
         $calling_location = $this->format_calling_location($trace);
-        $result = false;
         try
         {
             if( $expect === (is_callable($actual) ? $actual() : $actual) )
-            {
-                $this->pass($description);
-                return true;
-            }
-        } catch(\Throwable $th)
+                return $this->pass($description);
+        } catch(\Throwable $err)
         {
-            if( $expect instanceof \Throwable )
-            {
-                $valid_error_classes = array_merge(  class_parents($th)
-                                                  ,  class_implements($th)
-                                                  ,  [get_class($th)]
-                                                  );
-                if( in_array(get_class($expect), $valid_error_classes) )
-                    $result = strlen($expect->getMessage())
-                          ? ($expect->getMessage() == $th->getMessage())
-                          : true;
-            }
-            $actual = $th;
+            $actual = $err;
+            if( $expect instanceof \Throwable && $this->cmp_error($expect, $actual) )
+                return $this->pass($description);
         }
-        if( $result )
-            $this->pass($description);
-        else
-        {
-            $expect_dump = inspect_var($expect);
-            $actual_dump = inspect_var($actual);
-            $this->fail(  sprintf(   "\n\texpected: %s\n\t     got: %s"
-                                 ,   $expect_dump
-                                 ,   $actual_dump
-                                 )
-                       ,  $description
-                       ,  $calling_location
-                       );
-        }
-        return $result;
+        return $this->fail(  $calling_location
+                          ,  $description
+                          ,  sprintf(   "\n%8s: %s\n%8s: %s"
+                                    ,   'expected'
+                                    ,   inspect_var($expect)
+                                    ,   'got'
+                                    ,   inspect_var($actual)
+                                    )
+                          );
     }
 
-    private function fail(  string $failure
+    private function cmp_error($expect, $actual) : bool
+    {
+        $valid_classes = array_merge(  class_parents($actual)
+                                    ,  class_implements($actual)
+                                    ,  [get_class($actual)]
+                                    );
+        $class_is_valid     = in_array(get_class($expect), $valid_classes);
+        $msg_empty_or_match = strlen($expect->getMessage())
+                            ? $expect->getMessage() == $actual->getMessage()
+                            : true;
+        return $class_is_valid && $msg_empty_or_match;
+    }
+
+    private function fail(  string $calling_location
                          ,  string $description = null
-                         ,  string $calling_location = null
+                         ,  string $failure = null
                          )
     {
         printf(  "%s %d%s"
@@ -112,14 +106,15 @@ class Assert {
               );
         $this->fail_count++;
 
-        $this->diag(sprintf(   "\n\tFailed test %s%s%s"
-                           ,   $description      ? "'$description'\n\t"   : ''
-                           ,   $calling_location ? "at $calling_location" : ''
-                           ,   $failure
+        $this->diag(sprintf(   "\nFailed test %s%s%s"
+                           ,   $description ? "'$description'\n"   : ''
+                           ,   "at $calling_location"
+                           ,   $failure ?? ''
                            )
                    );
         if( $this->stop_on_failure )
             $this->done();
+        return false;
     }
 
     private function pass(string $description = '')
@@ -129,44 +124,23 @@ class Assert {
               ,  $this->test_count
               ,  ($description ? " - $description" : '')
               );
+        return true;
     }
 
     private function diag(string $msg)
     {
-        $error = join("\n#", explode("\n", $msg));
-        if( "\n" != substr(strlen($error)-1, 1) )
-            $error.= "\n";
-        print $error;
+        $diag = join("\n#\t", explode("\n", $msg));
+        if( "\n" != substr(strlen($diag)-1, 1) )
+            $diag.= "\n";
+        print $diag;
     }
 
-    public function done(bool $show_plan = true)
+    private function format_calling_location($trace) : string
     {
-        $this->is_done = true;
-        if( $show_plan )
-            printf("1..%d\n", $this->test_count);
-        $this->print_result();
-        if( $this->plan > $this->test_count )
-            $this->fail_count+= $this->plan - $this->test_count;
-        if( 0 == $this->test_count
-        || (0 == $this->fail_count && !$this->check_plan()) )
-            exit(255);
-        exit($this->fail_count > 254 ? 254 : $this->fail_count);
+        $caller = array_shift($trace);
+        $file = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
+        return sprintf("%s:%s", $file, $caller['line']);
     }
-
-    private function check_plan()
-    {
-        return !($this->plan > 0 && $this->plan != $this->test_count);
-    }
-
-    private function print_result()
-    {
-        if( $this->fail_count > 0 )
-            printf(  "Looks like you failed %d out of %d tests\n"
-                  ,  $this->fail_count
-                  ,  $this->test_count
-                  );
-    }
-
 }
 
 function inspect_var($var) : string
@@ -175,6 +149,22 @@ function inspect_var($var) : string
         return sprintf('%s("%s")', get_class($var), $var->getMessage());
     if( 'string' == gettype($var) )
         return sprintf('string(%d) "%s"', strlen($var), $var);
+    if( 'array' == gettype($var) )
+    {
+        $inspection = '[';
+        $count = 0;
+        foreach($var as $item)
+        {
+            if( $count )
+                $inspection.= ',';
+            $inspection.= inspect_var($item);
+            $count++;
+        }
+        $inspection.= ']';
+        return $inspection;
+    }
+    if( 'object' == gettype($var) )
+        return sprintf('object(%s)', get_class($var));
     return sprintf('%s(%s)', gettype($var), $var);
 }
 
