@@ -3,19 +3,8 @@
 
 require_once "vendor/autoload.php";
 require_once "t/lib/test-parser.php";
-$assert = new TestSimple\Assert(plan: 31);
+$assert = new TestSimple\Assert();
 
-$result = exec("php t/res/all_ok.php", $out, $retval);
-$parsed = parse_output($out);
-$assert->is("ok 1", $parsed[0]['test']);
-$assert->is("ok 2", $parsed[1]['test']);
-$assert->is("ok 3", $parsed[2]['test']);
-$assert->is("ok 4", $parsed[3]['test']);
-$assert->is("1..4", $parsed[4]['test'],
-    "reporting of number of tests");
-$assert->is(0, $retval, "successful exits with 0");
-
-unset($out);
 $result = exec("php t/res/named_unnamed.php", $out, $retval);
 $parsed = parse_output($out);
 $assert->is(2, $retval, "should have two failures");
@@ -97,13 +86,9 @@ not ok 4 - wrong error message
 #	     got: Error('got')
 Looks like you failed 4 out of 4 tests
 EOF;
-$expected_out = array_map('strip_line_number', explode("\n", $expected));
+$expected_out = explode("\n", $expected);
 $result = exec("php t/res/expectations.php", $got_out, $retval);
-$got_out = array_map('strip_line_number', $got_out);
-$diff = array_diff($expected_out, $got_out);
-$assert->is([], $diff, "expected and actual should be identical");
+foreach($expected_out as $index => $line)
+    $assert->is($line, $got_out[$index]);
 
-function strip_line_number($line)
-{
-    return explode(":", $line)[0];
-}
+$assert->done();

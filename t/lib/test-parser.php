@@ -1,6 +1,5 @@
 <?php
 
-
 function parse_output(array $lines)
 {
     $parsed = [];
