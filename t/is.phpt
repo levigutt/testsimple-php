@@ -2,7 +2,6 @@
 <?php
 
 require_once "vendor/autoload.php";
-require_once "t/lib/test-parser.php";
 $assert = new TestSimple\Assert();
 
 $result = exec("php t/res/is.php", $got_out, $retval);
