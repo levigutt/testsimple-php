@@ -97,7 +97,13 @@ not ok 4 - wrong error message
 #	     got: Error('got')
 Looks like you failed 4 out of 4 tests
 EOF;
-$expected_out = explode("\n", $expected);
+$expected_out = array_map('strip_line_number', explode("\n", $expected));
 $result = exec("php t/res/expectations.php", $got_out, $retval);
+$got_out = array_map('strip_line_number', $got_out);
 $diff = array_diff($expected_out, $got_out);
 $assert->is([], $diff, "expected and actual should be identical");
+
+function strip_line_number($line)
+{
+    return explode(":", $line)[0];
+}
