@@ -81,7 +81,7 @@ not ok 3 - wrong error type
 #	     got: Error('')
 not ok 4 - wrong error message
 #	Failed test 'wrong error message'
-#	at t/res/expectations.php:10
+#	at t/res/expectations.php:9
 #	expected: Error('expected')
 #	     got: Error('got')
 Looks like you failed 4 out of 4 tests
