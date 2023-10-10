@@ -65,6 +65,7 @@ class Assert {
         $this->test_count++;
         $trace = debug_backtrace();
         $calling_location = $this->format_calling_location($trace);
+        $test = ($expect === $actual);
         if( is_callable($actual) )
         {
             try
@@ -84,24 +85,15 @@ class Assert {
                         $test = strlen($expect->getMessage())
                               ? ($expect->getMessage() == $th->getMessage())
                               : true;
-                    $expect_dump = sprintf(  '%s("%s")'
-                                          ,  get_class($expect)
-                                          ,  $expect->getMessage()
-                                          );
                 }
-                $actual_dump = sprintf(  '%s("%s")'
-                                      ,  get_class($th)
-                                      ,  $th->getMessage()
-                                      );
+                $actual = $th;
             }
         }
+        if( $test ) $this->pass($description);
         else
         {
-            $expect_dump = var_dump_str($expect);
-            $actual_dump = var_dump_str($actual);
-            $test = ($expect === $actual);
-        }
-        if( !$test )
+            $expect_dump = inspect_var($expect);
+            $actual_dump = inspect_var($actual);
             $this->fail(  sprintf(   "\n\texpected: %s\n\t     got: %s"
                                  ,   $expect_dump
                                  ,   $actual_dump
@@ -109,10 +101,9 @@ class Assert {
                        ,  $description
                        ,  $calling_location
                        );
-        else
-            $this->pass($description);
+        }
         flush();
-        return !!$test;
+        return $test;
     }
 
     private function fail(  string $failure
@@ -181,12 +172,12 @@ class Assert {
 
 }
 
-function var_dump_str(...$var) : string
+function inspect_var($var) : string
 {
-    ob_start();
-    var_dump(...$var);
-    $str = ob_get_clean();
-    if( "\n" == substr($str, strlen($str)-1, 1) )
-        $str = substr($str, 0, strlen($str)-1);
-    return $str;
+    if( $var instanceOf \Throwable )
+        return sprintf('%s("%s")', get_class($var), $var->getMessage());
+    if( 'string' == gettype($var) )
+        return sprintf('string(%d) "%s"', strlen($var), $var);
+    return sprintf('%s(%s)', gettype($var), $var);
 }
+
