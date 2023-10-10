@@ -71,6 +71,27 @@ $tests[] = [  'script'        => 'php t/res/expectations.php'
            ,  'name'          => 'outputs expected and actual value correctly'
            ];
 
+$expected = <<<EOL
+1..4
+ok 1 - is: strict equality passes
+ok 2 - is: can test callable return value
+not ok 3 - is: loose equality fails
+#	Failed test 'is: loose equality fails'
+#	at t/res/is.php:11
+#	expected: <5>
+#	     got: <5>
+not ok 4 - is: not equal
+#	Failed test 'is: not equal'
+#	at t/res/is.php:12
+#	expected: <1>
+#	     got: <0>
+Looks like you failed 2 out of 4 tests
+EOL;
+$tests[] = [  'script'        => 'php t/res/is.php'
+           ,  'expected_out'  => $expected
+           ,  'expected_exit' => 2
+           ,  'name'          => '`is` has strict comparison and validates properly'
+           ];
 
 foreach($tests as $test)
 {
@@ -78,12 +99,14 @@ foreach($tests as $test)
     exec($test['script'], $got, $retval);
     $expected = explode("\n", $test['expected_out']);
     $assert->is($test['expected_exit'], $retval, sprintf("%s (exit code)", $test['name']));
-    $assert->ok(function() use ($expected, $got) {
-        foreach($expected as $index => $line)
-            if( $line !== $got[$index] )
-                return false;
-        return true;
-    }, sprintf("%s (output)", $test['name']));
+    $lines_match = true;
+    foreach($expected as $index => $line)
+        if( !$assert->is($line, $got[$index], sprintf("line %d matches", $index+1)) )
+        {
+            $lines_match = false;
+            break;
+        }
+    $assert->ok($lines_match, sprintf("%s (output)", $test['name']));
 }
 
 
