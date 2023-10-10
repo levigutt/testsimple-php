@@ -99,5 +99,6 @@ Looks like you failed 4 out of 4 tests
 EOF;
 $expected_out = explode("\n", $expected);
 $result = exec("php t/res/expectations.php", $got_out, $retval);
+print_r(['expect' => $expected_out, 'actual' => $got_out]);
 $diff = array_diff($expected_out, $got_out);
 $assert->is([], $diff, "expected and actual should be identical");
