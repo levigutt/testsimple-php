@@ -42,7 +42,7 @@ class Assert {
     {
         $this->test_count++;
         $trace = debug_backtrace();
-        $calling_location = $this->format_calling_location($trace);
+        $call_location = $this->format_call_location($trace);
         $error = '';
         try
         {
@@ -52,14 +52,14 @@ class Assert {
         {
             $error = $err->getMessage();
         }
-        return $this->fail($calling_location, $description, '');
+        return $this->fail($call_location, $description, '');
     }
 
     public function is($expect, $actual, $description = '') : bool
     {
         $this->test_count++;
         $trace = debug_backtrace();
-        $calling_location = $this->format_calling_location($trace);
+        $call_location = $this->format_call_location($trace);
         try
         {
             if( $expect === (is_callable($actual) ? $actual() : $actual) )
@@ -70,15 +70,13 @@ class Assert {
             if( $expect instanceof \Throwable && $this->cmp_error($expect, $actual) )
                 return $this->pass($description);
         }
-        return $this->fail(  $calling_location
-                          ,  $description
-                          ,  sprintf(   "\n%8s: %s\n%8s: %s"
-                                    ,   'expected'
-                                    ,   $this->inspect_var($expect)
-                                    ,   'got'
-                                    ,   $this->inspect_var($actual)
-                                    )
+        $failure = sprintf(  "\n%8s: %s\n%8s: %s"
+                          ,  'expected'
+                          ,  $this->inspect_var($expect)
+                          ,  'got'
+                          ,  $this->inspect_var($actual)
                           );
+        return $this->fail($call_location, $description, $failure);
     }
 
     private function cmp_error($expect, $actual) : bool
@@ -94,34 +92,38 @@ class Assert {
         return $class_is_valid && $msg_empty_or_match;
     }
 
-    private function fail(  string $calling_location
+    private function fail(  string $call_location
                          ,  string $description = null
                          ,  string $failure = null
                          )
     {
-        printf(  "not ok %d%s"
-              ,  $this->test_count
-              ,  $description ? " - $description" : ''
-              );
         $this->fail_count++;
+        $result      = sprintf("not ok %d", $this->test_count);
+        $diagnostics = "Failed test ";
 
-        $this->diag(sprintf(   "\nFailed test %s%s%s"
-                           ,   $description ? "'$description'\n"   : ''
-                           ,   "at $calling_location"
-                           ,   $failure ?? ''
-                           )
-                   );
+        if( $description )
+        {
+            $result.= " - $description";
+            $diagnostics.= "'$description'\n";
+        }
+        $diagnostics.= "at $call_location";
+        if( $failure )
+            $diagnostics.= $failure;
+
+        printf("%s\n", $result);
+        print $this->diag($diagnostics);
+
         if( $this->stop_on_failure )
             $this->done();
         return false;
     }
 
-    private function pass(string $description = '')
+    private function pass(string $description = null)
     {
-        printf(  "ok %d%s\n"
-              ,  $this->test_count
-              ,  ($description ? " - $description" : '')
-              );
+        $msg = sprintf("ok %d", $this->test_count);
+        if( $description )
+            $msg.= sprintf(" - %s", $description);
+        printf("%s\n", $msg);
         return true;
     }
 
@@ -130,10 +132,10 @@ class Assert {
         $diag = join("\n#\t", explode("\n", $msg));
         if( "\n" != substr(strlen($diag)-1, 1) )
             $diag.= "\n";
-        print $diag;
+        return sprintf("#\t%s", $diag);
     }
 
-    private function format_calling_location($trace) : string
+    private function format_call_location($trace) : string
     {
         $caller = array_shift($trace);
         $file = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
