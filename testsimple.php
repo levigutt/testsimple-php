@@ -25,7 +25,7 @@ class Assert {
                   ,  $this->fail_count
                   ,  $this->test_count
                   );
-        $exit_code = $this->fail_count > 254 ? 254 : $this->fail_count;
+        $exit_code = min(254, $this->fail_count);
         if( 0 == $this->test_count || (!$this->is_done && $this->plan == 0) )
             $exit_code = 255;
         exit($exit_code);
@@ -55,7 +55,7 @@ class Assert {
         return $this->fail($call_location, $description, '');
     }
 
-    public function is($expect, $actual, $description = '') : bool
+    public function is($expect, $actual, string $description = '') : bool
     {
         $this->test_count++;
         $trace = debug_backtrace();
@@ -79,17 +79,17 @@ class Assert {
         return $this->fail($call_location, $description, $failure);
     }
 
-    private function cmp_error($expect, $actual) : bool
+    private function cmp_error(\Throwable $expect, \Throwable $actual) : bool
     {
         $valid_classes = array_merge(  class_parents($actual)
                                     ,  class_implements($actual)
                                     ,  [get_class($actual)]
                                     );
-        $class_is_valid     = in_array(get_class($expect), $valid_classes);
-        $msg_empty_or_match = strlen($expect->getMessage())
-                            ? $expect->getMessage() == $actual->getMessage()
-                            : true;
-        return $class_is_valid && $msg_empty_or_match;
+        if( ! in_array(get_class($expect), $valid_classes) )
+            return false;
+        if( 0 == strlen($expect->getMessage()) )
+            return true;
+        return $expect->getMessage() == $actual->getMessage();
     }
 
     private function fail(  string $call_location
@@ -129,17 +129,17 @@ class Assert {
 
     private function diag(string $msg)
     {
-        $diag = join("\n#\t", explode("\n", $msg));
-        if( "\n" != substr(strlen($diag)-1, 1) )
-            $diag.= "\n";
-        return sprintf("#\t%s", $diag);
+        $lines       = explode("\n", $msg);
+        $formatted   = array_map(fn($x) => sprintf("#\t%s", $x), $lines);
+        $diagnostics = join("\n", $formatted);
+        return sprintf("%s\n", $diagnostics);
     }
 
-    private function format_call_location($trace) : string
+    private function format_call_location(array $trace) : string
     {
         $caller = array_shift($trace);
-        $file = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
-        return sprintf("%s:%s", $file, $caller['line']);
+        $file   = ltrim(str_replace(getcwd(), '', $caller['file']), '/');
+        return sprintf("%s:%d", $file, $caller['line']);
     }
 
     private function inspect_var($var) : string
@@ -149,9 +149,7 @@ class Assert {
         if( 'string' == gettype($var) )
             return sprintf('string(%d) "%s"', strlen($var), $var);
         if( 'array' == gettype($var) )
-            return sprintf(  '[%s]'
-                          ,  join(',', array_map(fn($x) => $this->inspect_var($x), $var))
-                          );
+            return sprintf('[%s]', join(',', array_map(__METHOD__, $var)));
         if( 'object' == gettype($var) )
             return sprintf('object(%s)', get_class($var));
         return sprintf('%s(%s)', gettype($var), $var);
