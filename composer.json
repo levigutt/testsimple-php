@@ -3,7 +3,7 @@
     "license": "GPL-2.0-only",
     "description": "simple testing framework for php",
     "autoload": {
-        "files": ["testsimple.php"]
+        "classmap": ["src"]
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

@@ -1,6 +1,6 @@
 <?php
 
-require_once("testsimple.php");
+require_once("vendor/autoload.php");
 $assert = new TestSimple\Assert(plan: 4);
 
 $assert->is(5, "5", "int vs string");
