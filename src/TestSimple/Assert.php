@@ -34,7 +34,8 @@ class Assert {
     public function done()
     {
         $this->is_done = true;
-        printf("1..%d\n", $this->test_count);
+        if( !$this->plan )
+            printf("1..%d\n", $this->test_count);
         exit; // destructor prints result and sets exit code
     }
 

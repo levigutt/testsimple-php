@@ -16,6 +16,18 @@ $assert->is(false, isset($out[$expected_test_count+1]),
     "no more tests than reported");
 
 unset($out);
+$result = exec("php t/res/plan_once.php", $out, $retval);
+$expected_test_count = (int)explode('..', $out[0])[1];
+$test_count = 0;
+foreach($out as $line)
+    if( false !== strpos($line, "ok") )
+        $test_count++;
+$assert->ok($test_count !== $expected_test_count,
+    "wrong number of tests expected");
+$assert->ok("1..$test_count" !== $out[array_key_last($out)],
+    "final line does not report actual test count");
+
+unset($out);
 $result = exec("php t/res/plan_done.php", $out, $retval);
 $test_count = 0;
 foreach($out as $line)
