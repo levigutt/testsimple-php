@@ -17,20 +17,19 @@ writing a test:
 
 example/broken.t:
 ```php
-require_once("testsimple.php");
-$assert = new TestSimple\Assert();
+use functions TestSimple\{ok, is, done_testing};    # import test functions
 
-$assert->ok(get_data());                 # description is optional
+ok(get_data());                                     # description is optional
 
-$assert->is(2, 1+1, "basic math works"); # is(expected, actual)
+is(2, 1+1, "basic math works");                     # is(expected, actual)
 
-$assert->ok(function()                   # pass function to trap errors
+ok(function()                                       # trap errors with functions
 {
     $c = new Thing();
     return $c->run();
 }, "thing can run");
 
-$assert->done();
+done_testing();
 ```
 
 running a test:
@@ -51,26 +50,25 @@ we should have a test for it:
 
 example/fixed.t:
 ```php
-require_once("testsimple.php");
-$assert = new TestSimple\Assert();
+use functions TestSimple\{ok, is, done_testing};
 
-$assert->ok(true);
+ok(true);
 
-$assert->is(2, 1+1, "basic math works");
+is(2, 1+1, "basic math works");
 
-$assert->is(new ArgumentCountError(), function()
+is(new ArgumentCountError(), function()
 {
     $c = new Thing();
     return $c->run();
 }, "thing cannot run without speed");
 
-$assert->ok(function()
+ok(function()
 {
     $c = new Thing(5);
     return $c->run();
 }, "thing can run");
 
-$assert->done();
+done_testing();
 ```
 
 and we run it:
@@ -107,7 +105,7 @@ and message (if defined). it will accept any ancestor class or implemented
 interface as a successful match
 
 ```php
-$assert->is(new Exception('Invalid input'), function()
+is(new Exception('Invalid input'), function()
 {
     $r = new Request('garbage');
     $r->run();
@@ -121,4 +119,13 @@ be one higher since this literally adds a test at the end to validate the
 number of tests. however, you do not have to take this into consideration when
 setting the number of tests.
 
+
+## OO INTERFACE
+
+```php
+$assert = new TestSimple\Assert(plan: 5);
+$assert->ok(1,          "1 is truthy");
+$assert->is(5, 2+3,     "math works");
+$assert->done();                        # ->done_testing() also works
+```
 

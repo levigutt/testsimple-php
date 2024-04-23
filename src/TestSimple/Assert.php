@@ -38,6 +38,7 @@ class Assert {
             printf("1..%d\n", $this->test_count);
         exit; // destructor prints result and sets exit code
     }
+    public function done_testing() { return $this->done(); }
 
     public function ok(mixed $expression, string $description = '') : bool
     {
@@ -155,4 +156,39 @@ class Assert {
             return sprintf('object(%s)', get_class($var));
         return sprintf('%s(%s)', gettype($var), $var);
     }
+}
+
+
+#####################
+##### FUNCTIONS #####
+#####################
+
+function _init(...$args)
+{
+    global $_assert;
+    is_object($_assert) && 'TestSimple\Assert' === get_class($_assert)
+        or $_assert = new Assert(...$args);
+}
+function plan(...$args)
+{
+    global $_assert;
+    _init(...$args);
+}
+function ok(...$args)
+{
+    global $_assert;
+    _init();
+    return $_assert->ok(...$args);
+}
+function is(...$args)
+{
+    global $_assert;
+    _init();
+    return $_assert->is(...$args);
+}
+function done_testing(...$args)
+{
+    global $_assert;
+    _init();
+    return $_assert->done();
 }

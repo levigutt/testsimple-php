@@ -1,20 +1,19 @@
 #!/usr/bin/env php
 <?php
-//require_once("vendor/autoload.php"); // load via composer
-require_once(dirname(__FILE__)."/../testsimple.php");
-$assert = new TestSimple\Assert();
+require_once(dirname(__FILE__)."/../vendor/autoload.php");
+use function TestSimple\{ok, is, done_testing};
 
-$assert->ok(true);
+ok(true);
 
-$assert->is(2, 1+1, "basic math works");
+is(2, 1+1, "basic math works");
 
-$assert->ok(function()
+ok(function()
 {
     $c = new Thing();
     return $c->run();
 }, "thing can run");
 
-$assert->done();
+done_testing();
 
 
 
