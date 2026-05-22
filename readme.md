@@ -1,7 +1,9 @@
 # SIMPLE TESTING FRAMEWORK FOR PHP
 
+A [TAP](http://testanything.org/)-compliant minimal test library for PHP. 
+
 Inspired by [Test::Simple](https://metacpan.org/pod/Test::Simple) for perl,
-but does not guarantee identical behaviour.
+but does not guarantee identical behaviour. 
 
 ## BACKGROUND
 
@@ -115,6 +117,9 @@ is(new Exception('Invalid input'), function()
 ```
 
 ## CAVEATS
+
+The test suite for `testsimple-php` is written in `testsimple-php`,
+make of that what you will. 
 
 When specifying the number of tests, the actual number of tests reported will
 be one higher since this literally adds a test at the end to validate the
