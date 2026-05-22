@@ -95,8 +95,8 @@ class Assert {
     }
 
     private function fail(  string $call_location
-                         ,  string $description = null
-                         ,  string $failure = null
+                         ,  ?string $description = null
+                         ,  ?string $failure = null
                          )
     {
         $this->fail_count++;
@@ -120,7 +120,7 @@ class Assert {
         return false;
     }
 
-    private function pass(string $description = null)
+    private function pass(?string $description = null)
     {
         $msg = sprintf("ok %d", $this->test_count);
         if( $description )
