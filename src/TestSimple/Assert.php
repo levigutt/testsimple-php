@@ -52,9 +52,10 @@ class Assert {
                 return $this->pass($description);
         } catch(\Throwable $err)
         {
-            $error = $err->getMessage();
+            $trace = $this->format_call_location($err->getTrace());
+            $error = sprintf("\n%s in %s", get_class($err), $trace);
         }
-        return $this->fail($call_location, $description, '');
+        return $this->fail($call_location, $description, $error);
     }
 
     public function is($expect, $actual, string $description = '') : bool
