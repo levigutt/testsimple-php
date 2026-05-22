@@ -120,6 +120,26 @@ $tests[] = [  'script'        => 'php t/res/array.php'
            ,  'name'          => 'failed `is` on arrays shows human readable diff'
            ];
 
+$expected = <<<EOL
+not ok 1 - Thrown error
+#	Failed test 'Thrown error'
+#	at t/res/thrown_error.php:11
+#	DivisionByZeroError in src/TestSimple/Assert.php:51
+not ok 2
+#	Failed test at t/res/thrown_error.php:12
+#	Error in src/TestSimple/Assert.php:51
+not ok 3
+#	Failed test at t/res/thrown_error.php:13
+#	CustomThrowable in src/TestSimple/Assert.php:51
+1..3
+Looks like you failed 3 out of 3 tests
+EOL;
+$tests[] = [  'script'        => 'php t/res/thrown_error.php'
+           ,  'expected_out'  => $expected
+           ,  'expected_exit' => 3
+           ,  'name'          => 'thrown errors are caught and error message is displayed'
+           ];
+
 foreach($tests as $test)
 {
     unset($got);
